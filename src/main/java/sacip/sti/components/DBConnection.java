@@ -24,126 +24,65 @@ public class DBConnection extends Component {
 
     @Override
     public void provide(String service, Map in, List out) throws ServiceException {
-        //TODO
-        //FINALIZAR A CRIAÇÃO DOS SERVIÇOS AQUI E NO XML
 
-        if (service.equals("createStudent"))
+        switch (service) 
         {
-            try
-            {
-                String result = createUser(instanceStudent(in));
-                out.add(result);
-            }
-            catch(Exception e)
-            {
-                out.add("FALHOU criação de estudante"+e);
-                System.out.println(e);
-            }
-        }
-        if (service.equals("findStudents")) {
-            try
-            {
-                List<Student> users = getUsers(in);
-                out.add(users);
-            }
-            catch(Exception e)
-            {
-                out.add("FALHOU busca de estudante"+e);
-                System.out.println(e);
-            }
-        }
-        if (service.equals("editStudent")) {
-            try
-            {
-                editUser((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue"));
-            }
-            catch(Exception e)
-            {
-                out.add("FALHOU edicao de estudante"+e);
-                System.out.println(e);
-            }
-        }
-        if (service.equals("deleteStudent")) {
-            try 
-            {
-                deleteUser((String) in.get("name"));                
-            }
-            catch (Exception e)
-            {
-                out.add("FALHOU remoção de estudante"+e);
-                System.out.println(e);
-            }
-        }
-        if (service.equals("createContent"))
-        {
-            try
-            {
-                String result = createContent(instanceContent(in));
-                out.add(result);
-            }
-            catch(Exception e)
-            {
-                out.add("FALHOU criação de conteudo"+e);
-                System.out.println(e);
-            }
-        }
-        if (service.equals("findContents")) {
-            try
-            {
-                List<Content> Contents = getContents(in);
-                out.add(Contents);
-            }
-            catch(Exception e)
-            {
-                out.add("FALHOU busca de conteudo"+e);
-                System.out.println(e);
-            }
-        }
-        if (service.equals("editContent")) {
-            try
-            {
-                editContent((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue"));
-            }
-            catch(Exception e)
-            {
-                out.add("FALHOU edicao de conteudo"+e);
-                System.out.println(e);
-            }
-        }
-        if (service.equals("deleteContent")) {
-            try 
-            {
-                deleteContent((String) in.get("name"));                
-            }
-            catch (Exception e)
-            {
-                out.add("FALHOU remoção de conteudo"+e);
-                System.out.println(e);
-            }
+            case "createStudent":
+                out.add(createUser(instanceStudent(in)));
+
+            case "findStudents":
+                out.add(getUsers(in));
+            
+            case "editStudent":
+                out.add(editUser((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
+            
+            case "deleteStudent":
+                out.add(deleteUser((String) in.get("name")));
+            
+            case "createContent":
+                out.add(createContent(instanceContent(in)));
+            
+            case "findContent":
+                out.add(getContents(in));
+            
+            case "editContent":
+                out.add(editContent((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
+            
+            case "deleteContent":
+                out.add(deleteContent((String) in.get("name")));
+
         }
     }
 
     private Student instanceStudent(Map in)
     {
-        return new Student((String)in.get("name"),
-                            (String)in.get("password"),
-                            (String)in.get("avatar"),
-                            (String)in.get("genero"),
-                            (int)in.get("idade"),
-                            (String)in.get("nivelEdu"),
-                            (List<String>) in.get("preferencias"));
+        try {
+            return new Student((String)in.get("name"),
+                                (String)in.get("password"),
+                                (String)in.get("avatar"),
+                                (String)in.get("genero"),
+                                (int)in.get("idade"),
+                                (String)in.get("nivelEdu"),
+                                (List<String>) in.get("preferencias"));            
+        } catch (Exception e) {
+            return new Student();
+        }
     }
 
     private Content instanceContent(Map in)
     {
-        return new Content((String)in.get("name"),
-                            (String)in.get("topic"),
-                            ((Long)in.get("difficulty")).intValue(),
-                            (String)in.get("complexity"),
-                            (boolean)in.get("exercise"),
-                            (String)in.get("taxonomy"),
-                            (List<String>) in.get("tags"),
-                            (String)in.get("link"));
+        try {
+            return new Content((String)in.get("name"),
+                                (String)in.get("topic"),
+                                ((Long)in.get("difficulty")).intValue(),
+                                (String)in.get("complexity"),
+                                (boolean)in.get("exercise"),
+                                (String)in.get("taxonomy"),
+                                (List<String>) in.get("tags"),
+                                (String)in.get("link"));    
+        } catch (Exception e) {
+            return new Content();
+        }
     }
 
     // private void createConstraints() {
@@ -154,137 +93,188 @@ public class DBConnection extends Component {
     // }
 
     public String createUser(Student student) {
-        System.out.println("FAZENDO QUERY");
-        var result = cypher.writequery("CREATE (u:USER {" 
-                                    + "name: $name," 
-                                    + "password: $password," 
-                                    + "avatar: $avatar,"
-                                    + "genero: $genero," 
-                                    + "nivelEdu: $nivelEdu," 
-                                    + "idade: $idade,"
-                                    + "preferencias: [$preferencias]" 
-                                    + "})",
-                    Map.of("name", student.getName(),
-                            "password", student.getPassword(),
-                            "avatar", student.getAvatar(),
-                            "genero", student.getGenero(),
-                            "nivelEdu", student.getNivelEducacional(),
-                            "idade", student.getIdade(),
-                            "preferencias", student.getPreferenciasAsString()));
-                            System.out.println("TERMINOU QUERY");
-        return result.toString();
+        try 
+        {
+            var result = cypher.writequery("CREATE (u:USER {" 
+                                        + "name: $name," 
+                                        + "password: $password," 
+                                        + "avatar: $avatar,"
+                                        + "genero: $genero," 
+                                        + "nivelEdu: $nivelEdu," 
+                                        + "idade: $idade,"
+                                        + "preferencias: [$preferencias]" 
+                                        + "})",
+                        Map.of("name", student.getName(),
+                                "password", student.getPassword(),
+                                "avatar", student.getAvatar(),
+                                "genero", student.getGenero(),
+                                "nivelEdu", student.getNivelEducacional(),
+                                "idade", student.getIdade(),
+                                "preferencias", student.getPreferenciasAsString()));
+            return result.toString();            
+        }
+        catch (Exception e)
+        {
+            return "FALHOU criação de estudante"+e;
+        }
     }
 
-    private List<Student> getUsers(Map<String, Object> attributes) {
-        //Cria query necessária
-        StringBuilder query = new StringBuilder("MATCH (n:USER {");
-        for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-            query.append(entry.getKey()+": $"+entry.getKey());
-            query.append(", ");
-        }
-        query.delete(query.length()-2, query.length()-1);
-        query.append("}) RETURN n");
-
-        //realisa a busca
-        var result = cypher.writequery(query.toString(), attributes);
-        if(result.isEmpty())
+    private Object getUsers(Map<String, Object> attributes) {
+        try 
         {
-            return null;
+            //Cria query necessária
+            StringBuilder query = new StringBuilder("MATCH (n:USER {");
+            for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                query.append(entry.getKey()+": $"+entry.getKey());
+                query.append(", ");
+            }
+            query.delete(query.length()-2, query.length()-1);
+            query.append("}) RETURN n");
+    
+            //realisa a busca
+            var result = cypher.writequery(query.toString(), attributes);
+            if(result.isEmpty())
+            {
+                return null;
+            }
+    
+            //Faz uma lista de estudantes encontrados
+            List<Student> students = new ArrayList<>();
+            for (Map<String,Object> map : result) {
+                map = (Map<String, Object>) map.get("n");
+                students.add(instanceStudent(map));
+            }        
+            return students;            
+        } 
+        catch (Exception e) 
+        {
+            return "FALHOU busca de estudante"+e;
         }
-
-        //Faz uma lista de estudantes encontrados
-        List<Student> students = new ArrayList<>();
-        for (Map<String,Object> map : result) {
-            map = (Map<String, Object>) map.get("n");
-            students.add(instanceStudent(map));
-        }        
-        return students;
     }    
 
     private String editUser(String name, String atributeName, String newValue)
     {
-        var result = cypher.writequery("MATCH (n:USER { name: $name })"+
-                                        "SET n.$atribute = $newValue"+
-                                        "RETURN n.name, n.$atribute"
-                    , Map.of("name", name, "atribute", atributeName, "newValue", newValue));
-        return result.toString();
+        try 
+        {
+            var result = cypher.writequery("MATCH (n:USER { name: $name })"+
+                                            "SET n.$atribute = $newValue"+
+                                            "RETURN n.name, n.$atribute"
+                        , Map.of("name", name, "atribute", atributeName, "newValue", newValue));
+            return result.toString();            
+        } 
+        catch (Exception e) 
+        {
+            return "FALHOU edicao de estudante"+e;
+        }
     }
 
     private String deleteUser(String name)
     {
-        var result = cypher.writequery("MATCH (n:USER { name: $name })"+
-                                       "DELETE n"
-                    , Map.of("name", name));
-        return result.toString();
+        try 
+        {
+            var result = cypher.writequery("MATCH (n:USER { name: $name })"+
+                                           "DELETE n"
+                        , Map.of("name", name));
+            return result.toString();    
+        }
+        catch (Exception e) 
+        {
+            return "FALHOU remoção de estudante"+e;
+        }
     }
 
     private String createContent(Content content)
     {
-        var result = cypher.writequery("CREATE (c:CONTENT "
-                                    +"{"
-                                    +"name: $name,"
-                                    +"topic: $topic,"
-                                    +"difficulty: $difficulty,"
-                                    +"complexity: $complexity,"
-                                    +"exercise: $exercise,"
-                                    +"taxonomy: $taxonomy,"
-                                    +"tags: [$tags],"
-                                    +"link: $link"
-                                    +"})",
-                        Map.of("name", content.getName(),
-                                "topic", content.getTopic(),
-                                "difficulty", content.getDifficulty(),
-                                "complexity", content.getComplexity(),
-                                "exercise", content.getExercise(),
-                                "taxonomy", content.getTaxonomy(),
-                                "tags", content.getTagsAsString(),
-                                "link", content.getLink()
-                        ));
-        return result.toString();
+        try 
+        {
+            var result = cypher.writequery("CREATE (c:CONTENT "
+                                        +"{"
+                                        +"name: $name,"
+                                        +"topic: $topic,"
+                                        +"difficulty: $difficulty,"
+                                        +"complexity: $complexity,"
+                                        +"exercise: $exercise,"
+                                        +"taxonomy: $taxonomy,"
+                                        +"tags: [$tags],"
+                                        +"link: $link"
+                                        +"})",
+                            Map.of("name", content.getName(),
+                                    "topic", content.getTopic(),
+                                    "difficulty", content.getDifficulty(),
+                                    "complexity", content.getComplexity(),
+                                    "exercise", content.getExercise(),
+                                    "taxonomy", content.getTaxonomy(),
+                                    "tags", content.getTagsAsString(),
+                                    "link", content.getLink()
+                            ));
+            return result.toString();    
+        } 
+        catch (Exception e) 
+        {
+            return "FALHOU criação de conteudo"+e;
+        }
     }
 
-    private List<Content> getContents(Map<String, Object> attributes)
+    private Object getContents(Map<String, Object> attributes)
     {
-        //Cria query necessária
-        StringBuilder query = new StringBuilder("MATCH (n:CONTENT {");
-        for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-            query.append(entry.getKey()+": $"+entry.getKey());
-            query.append(", ");
+        try {
+            //Cria query necessária
+            StringBuilder query = new StringBuilder("MATCH (n:CONTENT {");
+            for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                query.append(entry.getKey()+": $"+entry.getKey());
+                query.append(", ");
+            }
+            query.delete(query.length()-2, query.length()-1);
+            query.append("}) RETURN n");
+    
+            //realisa a busca
+            var result = cypher.writequery(query.toString(), attributes);
+            if(result.isEmpty())
+            {
+                return null;
+            }
+    
+            //Faz uma lista de conteudos encontrados
+            List<Content> content = new ArrayList<>();
+            for (Map<String,Object> map : result) {
+                map = (Map<String, Object>) map.get("n");
+                content.add(instanceContent(map));
+            }        
+            return content;            
+        } catch (Exception e) {
+            return "FALHOU busca de conteudo"+e;
         }
-        query.delete(query.length()-2, query.length()-1);
-        query.append("}) RETURN n");
-
-        //realisa a busca
-        var result = cypher.writequery(query.toString(), attributes);
-        if(result.isEmpty())
-        {
-            return null;
-        }
-
-        //Faz uma lista de conteudos encontrados
-        List<Content> content = new ArrayList<>();
-        for (Map<String,Object> map : result) {
-            map = (Map<String, Object>) map.get("n");
-            content.add(instanceContent(map));
-        }        
-        return content;
     } 
 
     private String editContent(String name, String atributeName, String newValue)
     {
-        var result = cypher.writequery("MATCH (n:CONTENT { name: $name })"+
-                                        "SET n.$atribute = $newValue"+
-                                        "RETURN n.name, n.$atribute"
-            , Map.of("name", name, "atribute", atributeName, "newValue", newValue));
-        return result.toString();
+        try 
+        {
+            var result = cypher.writequery("MATCH (n:CONTENT { name: $name })"+
+                                            "SET n.$atribute = $newValue"+
+                                            "RETURN n.name, n.$atribute"
+                , Map.of("name", name, "atribute", atributeName, "newValue", newValue));
+            return result.toString();            
+        }
+        catch (Exception e)
+        {
+            return "FALHOU edicao de conteudo"+e;
+        }
     }
 
     private String deleteContent(String name)
     {
-        var result = cypher.writequery("MATCH (n:CONTENT { name: $name })"+
-                                       "DELETE n"
-                    , Map.of("name", name));
-        return result.toString();
+        try 
+        {
+            var result = cypher.writequery("MATCH (n:CONTENT { name: $name })"+
+                                           "DELETE n"
+                        , Map.of("name", name));
+            return result.toString();            
+        } 
+        catch (Exception e) 
+        {
+            return "FALHOU remoção de conteudo"+e;
+        }
     }
 
     private void showNodes()

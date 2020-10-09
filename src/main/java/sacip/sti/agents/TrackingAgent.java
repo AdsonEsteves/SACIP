@@ -11,7 +11,6 @@ import org.midas.as.agent.board.MessageListener;
 import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
-import org.midas.as.manager.execution.ServiceWrapper;
 
 public class TrackingAgent extends Agent implements MessageListener{
 
@@ -47,21 +46,16 @@ public class TrackingAgent extends Agent implements MessageListener{
 		// {
 		// 	System.out.println(e.getMessage());
 		// }
-		// while(alive)
-		// {
-		// 	Thread.sleep(2000);
-		// }
+		while(alive)
+		{
+			Thread.sleep(2000);
+		}
 		
 	}
 
 	@Override
 	public void boardChanged(Message msg) {
 		// TODO Auto-generated method stub
-		
-	}
-	
-	public void portugolListener()
-	{
 		
 	}
 
