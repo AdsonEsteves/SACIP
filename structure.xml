@@ -1,0 +1,57 @@
+<agentserver>
+	<name>SACIP</name>
+
+	<localPort>7101</localPort>
+
+	<serverPort>7100</serverPort>
+	<serverAddress>127.0.0.1</serverAddress>
+	<!--<serverAddress>35.223.72.150</serverAddress>-->
+		
+	<organizations>		
+		<organization>
+			<name>SACIP</name>
+			<package>sacip.sti</package>
+			
+			<agents>
+				<agent>
+					<name>PedagogicalAgent</name>
+					<package>agents</package>
+					<className>PedagogicalAgent</className>
+					<protocol>native</protocol>
+				</agent>
+				<agent>
+					<name>TrackingAgent</name>
+					<package>agents</package>
+					<className>TrackingAgent</className>
+					<protocol>native</protocol>
+				</agent>
+				<agent>
+					<name>InterfaceAgent</name>
+					<package>agents</package>
+					<className>InterfaceAgent</className>
+					<protocol>native</protocol>
+				</agent>
+				<agent>
+					<name>RecommenderAgent</name>
+					<package>agents</package>
+					<className>RecommenderAgent</className>
+					<protocol>native</protocol>
+				</agent>
+				<agent>
+					<name>GrouperAgent</name>
+					<package>agents</package>
+					<className>GrouperAgent</className>
+					<protocol>native</protocol>
+				</agent>
+			</agents>
+			<components>
+				<component>
+					<name>DBConnection</name>
+					<package>components</package>
+					<className>DBConnection</className>
+					<protocol>native</protocol>
+				</component>
+			</components>
+		</organization>			
+	</organizations>
+</agentserver>

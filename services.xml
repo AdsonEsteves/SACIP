@@ -1,0 +1,103 @@
+<services>
+
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	<!--  SACIP Pedagogical Agent												-->
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+	<service>
+		<name>identifyErrors</name>
+		<description>verifica erros no código</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+		<parameters>
+			<parameter>
+				<name>codigo</name><class>java.lang.String</class>
+			</parameter>
+		</parameters>
+	</service>
+	<service>
+		<name>suggestContent</name>
+		<description>sugere uma trilha de aprendizado</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>suggestResolutionTips</name>
+		<description>sugere uma exercício</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>suggestContent</name>
+		<description>sugere um conteudo</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	<!--  SACIP Interface Agent													-->
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+	<service>
+		<name>getAnswer</name>
+		<description>retorna informações do aluno usuário</description>
+		<entity>InterfaceAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>getInterface</name>
+		<description>retorna informações do aluno usuário</description>
+		<entity>InterfaceAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	<!--  SACIP Recommender Agent												-->
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+	<service>
+		<name>getRecommendedContent</name>
+		<description>recomenda um exercicio ao remetente</description>
+		<entity>RecommenderAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	<!--  SACIP Grouper Agent													-->
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+	<service>
+		<name>groupStudents</name>
+		<description>Agrupa os alunos em grupos</description>
+		<entity>GrouperAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>groupStudents</name>
+		<description>Agrupa os alunos em grupos</description>
+		<entity>GrouperAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	<!--  SACIP DBConnection Component											-->
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+	<service>
+		<name>createStudent</name>
+		<description>registra um novo estudante no banco de dados</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
+
+</services>
