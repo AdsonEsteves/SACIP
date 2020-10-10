@@ -5,7 +5,7 @@ package sacip;
 
 import org.junit.Test;
 
-import sacip.launch.Launcher;
+import sacip.Launcher;
 
 import static org.junit.Assert.*;
 

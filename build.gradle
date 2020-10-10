@@ -12,6 +12,14 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application.
     id 'application'
+
+    id 'org.springframework.boot' version '2.3.4.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+}
+
+configurations {
+    all*.exclude module : 'spring-boot-starter-logging'
+    //all*.exclude module : 'logback-classic'
 }
 
 repositories {
@@ -28,10 +36,12 @@ dependencies {
     implementation 'com.google.guava:guava:29.0-jre'
 
     implementation 'br.com.smartechnology.midas:agent-server:1.2.0'
+    
 
     // https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver
-    compile group: 'org.neo4j.driver', name: 'neo4j-java-driver', version: '4.1.1'
+    implementation 'org.neo4j.driver:neo4j-java-driver:4.1.1'
 
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.13'
@@ -39,5 +49,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'sacip.launch.Launcher'
+    mainClassName = 'sacip.Launcher'
 }
