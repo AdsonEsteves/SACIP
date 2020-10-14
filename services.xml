@@ -64,11 +64,6 @@
 		<entity>InterfaceAgent</entity>
 		<scope>mas</scope>
 		<organization>SACIP</organization>
-		<parameters>
-			<parameter>
-				<name>novaConta</name><class>org.json.JSONObject</class>
-			</parameter>
-		</parameters>
 	</service>
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->

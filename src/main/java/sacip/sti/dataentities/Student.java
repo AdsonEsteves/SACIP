@@ -90,11 +90,7 @@ public class Student {
     public String getPreferenciasAsString() {
 
         StringBuilder builder = new StringBuilder();
-        if(preferencias==null)
-        {
-            System.out.println("PREFERENCIAS NULLL");
-            return "";
-        }
+
         for (String preferencia : preferencias) {
             builder.append(preferencia+",");
         }
@@ -144,17 +140,17 @@ public class Student {
     @Override
     public String toString() {
         return "{" +
-            " name='" + name + "'" +
-            ", password='" + password + "'" +
-            ", avatar='" + avatar + "'" +
-            ", genero='" + genero + "'" +
-            ", idade='" + idade + "'" +
-            ", nivelEducacional='" + nivelEducacional + "'" +
-            ", preferencias='" + preferencias + "'" +
-            ", trilha='" + trilha + "'" +
-            ", exerciciosResolvidos='" + exerciciosResolvidos + "'" +
-            ", tempoResolucao='" + tempoResolucao + "'" +
-            ", errosDoEstudante='" + errosDoEstudante + "'" +
+            " name:'" + name + "'" +
+            ", password:'" + password + "'" +
+            ", avatar:'" + avatar + "'" +
+            ", genero:'" + genero + "'" +
+            ", idade:" + idade + "" +
+            ", nivelEducacional:'" + nivelEducacional + "'" +
+            ", preferencias:" + preferencias + "" +
+            ", trilha:" + trilha + "" +
+            ", exerciciosResolvidos:" + exerciciosResolvidos + "" +
+            ", tempoResolucao:" + tempoResolucao + "" +
+            ", errosDoEstudante:" + errosDoEstudante + "" +
             "}";
     }
 

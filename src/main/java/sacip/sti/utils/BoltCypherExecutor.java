@@ -33,9 +33,7 @@ public class BoltCypherExecutor implements CypherExecutor {
 
     @Override
     public List<Map<String, Object>> writequery(String query, Map<String, Object> params) {
-        System.out.println("ESCREVENDO");
         try (Session session = getSession()) {
-            System.out.println("SESSAO");
             return session.writeTransaction(
                tx -> tx.run(query, params).list( r -> r.asMap(BoltCypherExecutor::convert))
             );

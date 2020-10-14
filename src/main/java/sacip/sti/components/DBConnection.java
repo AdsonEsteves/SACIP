@@ -1,27 +1,28 @@
 package sacip.sti.components;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.json.JSONArray;
+import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Component;
 import org.midas.as.agent.templates.ServiceException;
-import org.neo4j.driver.Result;
 
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 import sacip.sti.utils.BoltCypherExecutor;
 import sacip.sti.utils.CypherExecutor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @SuppressWarnings("unchecked")
 public class DBConnection extends Component {
 
     private final CypherExecutor cypher;
+    private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 
     public DBConnection() {
         super();
@@ -34,7 +35,7 @@ public class DBConnection extends Component {
         switch (service) 
         {
             case "createStudent":
-                out.add(createUser(instanceStudent(in)));
+                out.add(createUser((Student)in.get("conta")));
                 break;
 
             case "findStudents":
@@ -70,9 +71,7 @@ public class DBConnection extends Component {
 
     private Student instanceStudent(Map in)
     {
-        System.out.println("INSTANCIA ESTUDANTE " + in.get("preferencias"));
-        ObjectMapper mapper = new ObjectMapper();
-        
+        ObjectMapper mapper = new ObjectMapper();        
         try {
             return new Student((String)in.get("name"),
                                 (String)in.get("password"),
@@ -80,12 +79,10 @@ public class DBConnection extends Component {
                                 (String)in.get("genero"),
                                 (Integer)in.get("idade"),
                                 (String)in.get("nivelEdu"),
-                                mapper.readValue(((JSONArray) in.get("preferencias")).toString(), List.class));
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println(e.getLocalizedMessage() +"\n "+Arrays.asList(e.getStackTrace()));
-            //TODO REMOVER ISSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-            return new Student();
+                                (List<String>) in.get("preferencias"));
+        } catch (Exception e) {            
+            LOG.error("Não foi possível instanciar o estudante", e);
+            return null;
         }
     }
 
@@ -101,8 +98,8 @@ public class DBConnection extends Component {
                                 (List<String>) in.get("tags"),
                                 (String)in.get("link"));    
         } catch (Exception e) {
-            e.printStackTrace();
-            return new Content();
+            LOG.error("Não foi possível instanciar o conteúdo", e);
+            return null;
         }
     }
 
@@ -116,8 +113,7 @@ public class DBConnection extends Component {
     public String createUser(Student student) {
         try 
         {
-            System.out.println("INICIOU QUERY " + student.toString());
-            List<Map<String, Object>> query = cypher.writequery("CREATE (u:USER {" 
+            List<Map<String, Object>> result = cypher.writequery("CREATE (u:USER {" 
                                         + "name: $name," 
                                         + "password: $password," 
                                         + "avatar: $avatar,"
@@ -133,19 +129,12 @@ public class DBConnection extends Component {
                                 "nivelEdu", student.getNivelEducacional(),
                                 "idade", student.getIdade(),
                                 "preferencias", student.getPreferenciasAsString()));
-            System.out.println("MANDOU QUERY "+query.toString());
-            for (Map<String,Object> map : query) {
-                for (String key: map.keySet()) {
-                    System.out.println("key : " + key + ", value : " + map.get(key));
-                }
-            }
-            return query.toString();            
+            return result.toString();            
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            System.out.println(e.getLocalizedMessage() +"\n "+Arrays.asList(e.getStackTrace()));
-            return "FALHOU criação de estudante "+e.getStackTrace();
+            LOG.error("Não foi possível criar o estudante no banco", e);
+            return "FALHOU criação de estudante "+e.getLocalizedMessage();
         }
     }
 
@@ -178,7 +167,8 @@ public class DBConnection extends Component {
         } 
         catch (Exception e) 
         {
-            return "FALHOU busca de estudante"+e;
+            LOG.error("FALHOU busca de estudante", e);
+            return "FALHOU busca de estudante "+e.getLocalizedMessage();
         }
     }    
 
@@ -194,7 +184,8 @@ public class DBConnection extends Component {
         } 
         catch (Exception e) 
         {
-            return "FALHOU edicao de estudante"+e;
+            LOG.error("FALHOU edicao de estudante", e);
+            return "FALHOU edicao de estudante "+e.getLocalizedMessage();
         }
     }
 
@@ -209,7 +200,8 @@ public class DBConnection extends Component {
         }
         catch (Exception e) 
         {
-            return "FALHOU remoção de estudante"+e;
+            LOG.error("FALHOU remoção de estudante", e);
+            return "FALHOU remoção de estudante "+e.getLocalizedMessage();
         }
     }
 
@@ -241,8 +233,8 @@ public class DBConnection extends Component {
         } 
         catch (Exception e) 
         {
-            e.printStackTrace();
-            return "FALHOU criação de conteudo"+e;
+            LOG.error("FALHOU criação de conteudo", e);
+            return "FALHOU criação de conteudo "+ e.getLocalizedMessage();
         }
     }
 
@@ -273,7 +265,8 @@ public class DBConnection extends Component {
             }        
             return content;            
         } catch (Exception e) {
-            return "FALHOU busca de conteudo"+e;
+            LOG.error("FALHOU busca de conteudo", e);
+            return "FALHOU busca de conteudo "+ e.getLocalizedMessage();
         }
     } 
 
@@ -289,7 +282,8 @@ public class DBConnection extends Component {
         }
         catch (Exception e)
         {
-            return "FALHOU edicao de conteudo"+e;
+            LOG.error("FALHOU edicao de conteudo", e);
+            return "FALHOU edicao de conteudo "+ e.getLocalizedMessage();
         }
     }
 
@@ -304,7 +298,8 @@ public class DBConnection extends Component {
         } 
         catch (Exception e) 
         {
-            return "FALHOU remoção de conteudo"+e;
+            LOG.error("FALHOU remoção de conteudo", e);
+            return "FALHOU remoção de conteudo " + e.getLocalizedMessage();
         }
     }
 
@@ -324,35 +319,7 @@ public class DBConnection extends Component {
     public static void main(String[] args) {
 
         DBConnection conect = new DBConnection();
-        // // Student student1 = new Student("Adson", "", "animegirl", "homem", 24, "graduação", new ArrayList<>());
-        // Student student1 = new Student("Wayne", "ICE", "YGOPRO", "homem", 21, "ensino médio", new ArrayList<>());
-        // Student student2 = new Student("Saber", "", "bruhh", "homem", 24, "graduação", new ArrayList<>());
-        // Student student3 = new Student("Aluizio", "", "xx", "homem", 24, "graduação", new ArrayList<>());
-        // Student student4 = new Student("Rodrigo", "", "aa", "homem", 24, "graduação", new ArrayList<>());
-        // Student student5 = new Student("Andre", "", "dd", "homem", 24, "graduação", new ArrayList<>());
-        // Student student6 = new Student("Alisson", "", "ff", "homem", 24, "graduação", new ArrayList<>());
-        // List<String> preferencias = new ArrayList<>();
-        // preferencias.add("filmes");
-        // preferencias.add("musica");
-        // Student student7 = new Student("Yukino", "3333", "oregairu", "mulher", 24, "mestrado", preferencias);
-
-        // conect.createUser(student1);
-        // conect.createUser(student2);
-        // conect.createUser(student3);
-        // conect.createUser(student4);
-        // conect.createUser(student5);
-        // conect.createUser(student6);
-        // conect.createUser(student7);
-
         conect.showNodes();
-        // List<Student> found = conect.getUsers(Map.of("idade", 24, "nivelEdu", "graduação"));
-        // if(found!=null)
-        // System.out.println("encontrou "+found.toString());
-        // else
-        // System.out.println("naoencontrou");
-        // conect.resetDB();
-
-        // conect.printPeople("A");
         System.exit(0);
     }
 
