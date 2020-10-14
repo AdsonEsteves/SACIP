@@ -90,7 +90,11 @@ public class Student {
     public String getPreferenciasAsString() {
 
         StringBuilder builder = new StringBuilder();
-
+        if(preferencias==null)
+        {
+            System.out.println("PREFERENCIAS NULLL");
+            return "";
+        }
         for (String preferencia : preferencias) {
             builder.append(preferencia+",");
         }

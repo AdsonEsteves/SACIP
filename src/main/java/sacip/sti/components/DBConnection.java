@@ -1,11 +1,17 @@
 package sacip.sti.components;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.json.JSONArray;
 import org.midas.as.agent.templates.Component;
 import org.midas.as.agent.templates.ServiceException;
+import org.neo4j.driver.Result;
 
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
@@ -29,42 +35,56 @@ public class DBConnection extends Component {
         {
             case "createStudent":
                 out.add(createUser(instanceStudent(in)));
+                break;
 
             case "findStudents":
                 out.add(getUsers(in));
+                break;
             
             case "editStudent":
                 out.add(editUser((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
+                break;
             
             case "deleteStudent":
                 out.add(deleteUser((String) in.get("name")));
+                break;
             
             case "createContent":
                 out.add(createContent(instanceContent(in)));
+                break;
             
             case "findContent":
                 out.add(getContents(in));
+                break;
             
             case "editContent":
                 out.add(editContent((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
+                break;
             
             case "deleteContent":
                 out.add(deleteContent((String) in.get("name")));
+                break;
 
         }
     }
 
     private Student instanceStudent(Map in)
     {
+        System.out.println("INSTANCIA ESTUDANTE " + in.get("preferencias"));
+        ObjectMapper mapper = new ObjectMapper();
+        
         try {
             return new Student((String)in.get("name"),
                                 (String)in.get("password"),
                                 (String)in.get("avatar"),
                                 (String)in.get("genero"),
-                                (int)in.get("idade"),
+                                (Integer)in.get("idade"),
                                 (String)in.get("nivelEdu"),
-                                (List<String>) in.get("preferencias"));            
+                                mapper.readValue(((JSONArray) in.get("preferencias")).toString(), List.class));
         } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getLocalizedMessage() +"\n "+Arrays.asList(e.getStackTrace()));
+            //TODO REMOVER ISSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
             return new Student();
         }
     }
@@ -81,6 +101,7 @@ public class DBConnection extends Component {
                                 (List<String>) in.get("tags"),
                                 (String)in.get("link"));    
         } catch (Exception e) {
+            e.printStackTrace();
             return new Content();
         }
     }
@@ -95,7 +116,8 @@ public class DBConnection extends Component {
     public String createUser(Student student) {
         try 
         {
-            var result = cypher.writequery("CREATE (u:USER {" 
+            System.out.println("INICIOU QUERY " + student.toString());
+            List<Map<String, Object>> query = cypher.writequery("CREATE (u:USER {" 
                                         + "name: $name," 
                                         + "password: $password," 
                                         + "avatar: $avatar,"
@@ -111,11 +133,19 @@ public class DBConnection extends Component {
                                 "nivelEdu", student.getNivelEducacional(),
                                 "idade", student.getIdade(),
                                 "preferencias", student.getPreferenciasAsString()));
-            return result.toString();            
+            System.out.println("MANDOU QUERY "+query.toString());
+            for (Map<String,Object> map : query) {
+                for (String key: map.keySet()) {
+                    System.out.println("key : " + key + ", value : " + map.get(key));
+                }
+            }
+            return query.toString();            
         }
         catch (Exception e)
         {
-            return "FALHOU criação de estudante"+e;
+            e.printStackTrace();
+            System.out.println(e.getLocalizedMessage() +"\n "+Arrays.asList(e.getStackTrace()));
+            return "FALHOU criação de estudante "+e.getStackTrace();
         }
     }
 
@@ -132,7 +162,7 @@ public class DBConnection extends Component {
             query.append("}) RETURN n");
     
             //realisa a busca
-            var result = cypher.writequery(query.toString(), attributes);
+            var result = cypher.readquery(query.toString(), attributes);
             if(result.isEmpty())
             {
                 return null;
@@ -211,6 +241,7 @@ public class DBConnection extends Component {
         } 
         catch (Exception e) 
         {
+            e.printStackTrace();
             return "FALHOU criação de conteudo"+e;
         }
     }
@@ -228,7 +259,7 @@ public class DBConnection extends Component {
             query.append("}) RETURN n");
     
             //realisa a busca
-            var result = cypher.writequery(query.toString(), attributes);
+            var result = cypher.readquery(query.toString(), attributes);
             if(result.isEmpty())
             {
                 return null;
@@ -293,7 +324,8 @@ public class DBConnection extends Component {
     public static void main(String[] args) {
 
         DBConnection conect = new DBConnection();
-        // Student student1 = new Student("Adson", "", "animegirl", "homem", 24, "graduação", new ArrayList<>());
+        // // Student student1 = new Student("Adson", "", "animegirl", "homem", 24, "graduação", new ArrayList<>());
+        // Student student1 = new Student("Wayne", "ICE", "YGOPRO", "homem", 21, "ensino médio", new ArrayList<>());
         // Student student2 = new Student("Saber", "", "bruhh", "homem", 24, "graduação", new ArrayList<>());
         // Student student3 = new Student("Aluizio", "", "xx", "homem", 24, "graduação", new ArrayList<>());
         // Student student4 = new Student("Rodrigo", "", "aa", "homem", 24, "graduação", new ArrayList<>());

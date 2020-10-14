@@ -36,6 +36,10 @@ dependencies {
     implementation 'com.google.guava:guava:29.0-jre'
 
     implementation 'br.com.smartechnology.midas:agent-server:1.2.0'
+
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation 'org.json:json:20200518'
+
     
 
     // https://mvnrepository.com/artifact/org.neo4j.driver/neo4j-java-driver

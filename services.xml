@@ -49,12 +49,26 @@
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>
+	
 	<service>
 		<name>getInterface</name>
 		<description>retorna informações do aluno usuário</description>
 		<entity>InterfaceAgent</entity>
 		<scope>mas</scope>
 		<organization>SACIP</organization>
+	</service>
+
+	<service>
+		<name>createAccount</name>
+		<description>cria nova conta de usuário</description>
+		<entity>InterfaceAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+		<parameters>
+			<parameter>
+				<name>novaConta</name><class>org.json.JSONObject</class>
+			</parameter>
+		</parameters>
 	</service>
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->

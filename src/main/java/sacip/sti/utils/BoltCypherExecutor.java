@@ -55,7 +55,6 @@ public class BoltCypherExecutor implements CypherExecutor {
             case "NODE":
             case "RELATIONSHIP":
                 return value.asMap();
-            default:
         }
         return value.asObject();
     }
