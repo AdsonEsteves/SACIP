@@ -3,8 +3,13 @@ package sacip.sti.dataentities;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Student {
+import com.fasterxml.jackson.databind.JsonNode;
+
+import org.midas.util.MidasBean;
+
+public class Student extends MidasBean{
     
+    //Dados pessoais
     private String name;
     private String password;
     private String avatar;
@@ -12,6 +17,8 @@ public class Student {
     private int idade;
     private String nivelEducacional;
     private List<String> preferencias;
+    
+    //dados de Uso
     private List<String> trilha;
     private List<String> exerciciosResolvidos;
     private int tempoResolucao;

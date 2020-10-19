@@ -51,7 +51,7 @@ public class DBConnection extends Component {
                 break;
             
             case "createContent":
-                out.add(createContent(instanceContent(in)));
+                out.add(createContent((Content)in.get("conta")));
                 break;
             
             case "findContent":
@@ -70,8 +70,7 @@ public class DBConnection extends Component {
     }
 
     private Student instanceStudent(Map in)
-    {
-        ObjectMapper mapper = new ObjectMapper();        
+    {    
         try {
             return new Student((String)in.get("name"),
                                 (String)in.get("password"),
@@ -135,6 +134,18 @@ public class DBConnection extends Component {
         {
             LOG.error("Não foi possível criar o estudante no banco", e);
             return "FALHOU criação de estudante "+e.getLocalizedMessage();
+        }
+    }
+
+    private Object addClickInformation(String name, Map<String, Object> cliqueReg){
+        try 
+        {
+            return "";
+        } 
+        catch (Exception e) 
+        {    
+            LOG.error("Não foi possível registrar os cliques do estudante no banco", e);
+            return "FALHOU registro de cliques do estudante "+e.getLocalizedMessage();        
         }
     }
 

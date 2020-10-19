@@ -12,7 +12,18 @@ import org.midas.as.agent.templates.ServiceException;
 import org.midas.as.manager.execution.ServiceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
+import sacip.sti.dataentities.Student;
+
+@RestController
+@RequestMapping("/interface")
 public class InterfaceAgent extends Agent implements MessageListener{
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
@@ -25,20 +36,6 @@ public class InterfaceAgent extends Agent implements MessageListener{
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-
-		if(service.equals("createAccount"))
-		{
-			try {				
-				ServiceWrapper wrapper = require("SACIP", "createStudent");
-				wrapper.addParameter("conta", in.get("novaConta"));
-				List response = wrapper.run();
-				out.add(response.get(0));
-
-			} catch (Exception e) {
-				LOG.error("Falhou criar conta", e);
-				out.add("FALHOU INTERFACE AGENT"+e);
-			}
-		}
 		
 	}
 
@@ -46,6 +43,43 @@ public class InterfaceAgent extends Agent implements MessageListener{
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@PostMapping("/contas")
+	@ResponseBody
+	public String criaNovaConta(@RequestBody Student conta) {
+
+		try {
+			ServiceWrapper wrapper = AgentServer.require("SACIP", "createStudent");
+			wrapper.addParameter("novaConta", conta);
+			List run = wrapper.run();
+			return run.toString();
+		} catch (Exception e) {
+			LOG.error("Falhou criar conta em REST Interface", e);
+			return "Falhou criar conta: \n"+e.getLocalizedMessage();
+		}
+	}
+
+	@GetMapping("/contas")
+	public String fazLogin() {
+		return "";
+	}
+
+    @PutMapping("/contas")
+	public String editarConta(String name) {
+		return "test";
+	}
+	
+	@GetMapping("/pergunta")
+	public String buscaPergunta()
+	{
+		return "";
+	}
+
+	@PostMapping("/pergunta")
+	public String registraPergunta()
+	{
+		return "";
 	}
 
 }

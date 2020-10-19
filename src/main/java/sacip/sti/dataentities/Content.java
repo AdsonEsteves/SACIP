@@ -2,7 +2,9 @@ package sacip.sti.dataentities;
 
 import java.util.List;
 
-public class Content {
+import org.midas.util.MidasBean;
+
+public class Content extends MidasBean{
     
     private String name;
     private String topic;

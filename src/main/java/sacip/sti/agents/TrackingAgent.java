@@ -1,9 +1,12 @@
 package sacip.sti.agents;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.midas.as.agent.board.Board;
 import org.midas.as.agent.board.Message;
@@ -16,8 +19,24 @@ public class TrackingAgent extends Agent implements MessageListener{
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		// TODO Auto-generated method stub
 		
+		if(service.equals("storeData"))
+		{
+			JsonNode dados = (JsonNode) in.get("dados");
+			Iterator<Entry<String, JsonNode>> fields = dados.fields();
+			if(dados.isObject())
+			{
+				ObjectNode jsonobject = (ObjectNode) dados;
+				Iterator<Entry<String, JsonNode>> nodes = jsonobject.get("cliques").fields();
+
+				while (nodes.hasNext()) {
+					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+
+					//logger.info("key --> " + entry.getKey() + " value-->" + entry.getValue());
+				}
+
+			}
+		}
 	}
 
 	@Override
@@ -25,31 +44,10 @@ public class TrackingAgent extends Agent implements MessageListener{
 		// TODO Auto-generated method stub
 		Board.addMessageListener("SACIP", this);
 		
-		// try
+		// while(alive)
 		// {
-		// 	System.out.println("TESTANDO TRACK");
-		// 	List<String> preferencias = Arrays.asList("futebol", "memes", "animais");
-		// 	ServiceWrapper wrapper = require("SACIP", "createStudent");
-		// 	wrapper.addParameter("name", "Joe");
-		// 	wrapper.addParameter("idade", 35);
-		// 	wrapper.addParameter("password", "1235456");
-		// 	wrapper.addParameter("avatar", "bigimage");
-		// 	wrapper.addParameter("genero", "homem");
-		// 	wrapper.addParameter("nivelEdu", "ensino médio");
-		// 	wrapper.addParameter("preferencias", preferencias);
-		// 	System.out.println("VAI MANDAR");
-		// 	List respostas = wrapper.run();
-		// 	System.out.println("MANDOU");;
-		// 	System.out.println(respostas.get(0));
+		// 	Thread.sleep(2000);
 		// }
-		// catch(Exception e)
-		// {
-		// 	System.out.println(e.getMessage());
-		// }
-		while(alive)
-		{
-			Thread.sleep(2000);
-		}
 		
 	}
 
