@@ -140,7 +140,66 @@ public class DBConnection extends Component {
     private Object addClickInformation(String name, Map<String, Object> cliqueReg){
         try 
         {
-            return "";
+            //Cria query necessaria
+            StringBuilder query = new StringBuilder("MATCH 	(n:USER {name: $name }),");
+            Map updates = Map.of("name", name);
+            query.append("MERGE");            
+            for (Map.Entry<String, Object> entry : cliqueReg.entrySet()) {
+                switch(entry.getKey())
+                {
+                    case "Conteudo":
+                        query.append("(n)-[:CLICKS]-(c:CONTENT{name: $name}),");
+                    break;
+                    
+                    case "Exemplos":
+                        query.append("(n)-[:CLICKS]-(e:EXEMPLO{name: $name}),");
+                    break;
+                    
+                    case "OGPor":
+                        query.append("(n)-[:CLICKS]-(o:OGPOR{name: $name}),");
+                    break;
+                    
+                    case "Ajuda":
+                        query.append("(n)-[:CLICKS]-(a:AJUDA{name: $name}),");
+                    break;
+                }
+            }
+            query.deleteCharAt(query.length()-1);
+            query.append("SET");
+            for (Map.Entry<String, Object> entry : cliqueReg.entrySet()) {
+                switch(entry.getKey())
+                {
+                    case "Conteudo":
+                        query.append("c.log = c.coalesce(c.log, []) + $clog");
+                        updates.put("clog", cliqueReg.get(entry.getKey()));
+                    break;
+                    
+                    case "Exemplos":
+                        query.append("e.log = e.coalesce(e.log, []) + $elog");
+                        updates.put("elog", cliqueReg.get(entry.getKey())); 
+                    break;
+                    
+                    case "OGPor":
+                        query.append("o.log = o.coalesce(o.log, []) + $olog");
+                        updates.put("olog", cliqueReg.get(entry.getKey())); 
+                    break;
+                    
+                    case "Ajuda":
+                        query.append("a.log = a.coalesce(a.log, []) + $alog");
+                        updates.put("alog", cliqueReg.get(entry.getKey())); 
+                    break;
+                }
+            }
+            query.append("RETURN n");
+
+            //realisa o set
+            var result = cypher.writequery(query.toString(), updates);
+            if(result.isEmpty())
+            {
+                return "SUCESSO";
+            }
+
+            return "SUCESSO";
         } 
         catch (Exception e) 
         {    
