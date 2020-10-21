@@ -1,10 +1,13 @@
 package sacip.sti.components;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Component;
@@ -50,6 +53,9 @@ public class DBConnection extends Component {
                 out.add(deleteUser((String) in.get("name")));
                 break;
             
+            case "storeStudentUseData":
+                out.add(addClickInformation((String)in.get("name"), (Map)in.get("data")));
+                break;                            
             case "createContent":
                 out.add(createContent((Content)in.get("conta")));
                 break;
@@ -141,57 +147,58 @@ public class DBConnection extends Component {
         try 
         {
             //Cria query necessaria
-            StringBuilder query = new StringBuilder("MATCH 	(n:USER {name: $name }),");
-            Map updates = Map.of("name", name);
-            query.append("MERGE");            
+            StringBuilder query = new StringBuilder("MATCH 	(n:USER {name: $name }) \n");
+            Map<String, Object> updates = new HashMap<String, Object>();
+            updates.put("name", name);
+            query.append(" MERGE");            
             for (Map.Entry<String, Object> entry : cliqueReg.entrySet()) {
                 switch(entry.getKey())
                 {
                     case "Conteudo":
-                        query.append("(n)-[:CLICKS]-(c:CONTENT{name: $name}),");
+                        query.append("\n(n)-[:CLICKS]-(c:CONTENT{name: $name}),");
                     break;
                     
                     case "Exemplos":
-                        query.append("(n)-[:CLICKS]-(e:EXEMPLO{name: $name}),");
+                        query.append("\n(n)-[:CLICKS]-(e:EXEMPLO{name: $name}),");
                     break;
                     
                     case "OGPor":
-                        query.append("(n)-[:CLICKS]-(o:OGPOR{name: $name}),");
+                        query.append("\n(n)-[:CLICKS]-(o:OGPOR{name: $name}),");
                     break;
                     
                     case "Ajuda":
-                        query.append("(n)-[:CLICKS]-(a:AJUDA{name: $name}),");
+                        query.append("\n(n)-[:CLICKS]-(a:AJUDA{name: $name}),");
                     break;
                 }
             }
             query.deleteCharAt(query.length()-1);
-            query.append("SET");
+            query.append("\nSET");
             for (Map.Entry<String, Object> entry : cliqueReg.entrySet()) {
                 switch(entry.getKey())
                 {
                     case "Conteudo":
-                        query.append("c.log = c.coalesce(c.log, []) + $clog");
-                        updates.put("clog", cliqueReg.get(entry.getKey()));
+                        query.append("\nc.log = coalesce(c.log, []) + $clog");
+                        updates.put("clog", cliqueReg.get(entry.getKey())); 
                     break;
                     
                     case "Exemplos":
-                        query.append("e.log = e.coalesce(e.log, []) + $elog");
+                        query.append("\ne.log = coalesce(e.log, []) + $elog");
                         updates.put("elog", cliqueReg.get(entry.getKey())); 
                     break;
                     
                     case "OGPor":
-                        query.append("o.log = o.coalesce(o.log, []) + $olog");
+                        query.append("\no.log = coalesce(o.log, []) + $olog");
                         updates.put("olog", cliqueReg.get(entry.getKey())); 
                     break;
                     
                     case "Ajuda":
-                        query.append("a.log = a.coalesce(a.log, []) + $alog");
+                        query.append("\na.log = coalesce(a.log, []) + $alog");
                         updates.put("alog", cliqueReg.get(entry.getKey())); 
                     break;
                 }
             }
-            query.append("RETURN n");
-
+            query.append("\nRETURN n");
+            System.out.println(query.toString());
             //realisa o set
             var result = cypher.writequery(query.toString(), updates);
             if(result.isEmpty())
@@ -381,6 +388,14 @@ public class DBConnection extends Component {
         }
     }
 
+    private void showNodeRelationships(String name)
+    {
+        var result = cypher.readquery("MATCH (n:USER {name: $name})--(r) RETURN n,r", Map.of("name", name));
+        for (Map<String,Object> map : result) {
+            System.out.println(map.toString());
+        }
+    }
+
     private void resetDB()
     {
         cypher.writequery("MATCH (n) DETACH DELETE n", Map.of());
@@ -389,7 +404,15 @@ public class DBConnection extends Component {
     public static void main(String[] args) {
 
         DBConnection conect = new DBConnection();
+        String dado1 = "{'componente':'DEbug', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
+        String dado2 = "{'componente':'DESU', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
+        List<String> dadosL = new ArrayList<>();
+        dadosL.add(dado1);
+        dadosL.add(dado2);
+        Map<String, Object> dados = Map.of("Conteudo", dadosL);
+        System.out.println(conect.addClickInformation("Andre", dados));
         conect.showNodes();
+        // conect.showNodeRelationships("Andre");
         System.exit(0);
     }
 

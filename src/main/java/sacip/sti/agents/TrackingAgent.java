@@ -1,5 +1,7 @@
 package sacip.sti.agents;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -8,29 +10,54 @@ import java.util.Map.Entry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import org.midas.as.AgentServer;
 import org.midas.as.agent.board.Board;
 import org.midas.as.agent.board.Message;
 import org.midas.as.agent.board.MessageListener;
 import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
+import org.midas.as.manager.execution.ServiceWrapper;
+import org.midas.as.manager.execution.ServiceWrapperException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class TrackingAgent extends Agent implements MessageListener{
+public class TrackingAgent extends Agent implements MessageListener {
+
+	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		
-		if(service.equals("storeData"))
-		{
+
+		if (service.equals("storeData")) {
 			JsonNode dados = (JsonNode) in.get("dados");
 			Iterator<Entry<String, JsonNode>> fields = dados.fields();
-			if(dados.isObject())
-			{
+			if (dados.isObject()) {
 				ObjectNode jsonobject = (ObjectNode) dados;
 				Iterator<Entry<String, JsonNode>> nodes = jsonobject.get("cliques").fields();
 
 				while (nodes.hasNext()) {
 					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
+					List<String> dadosC = new ArrayList<>();
+					List<String> dadosO = new ArrayList<>();
+					List<String> dadosA = new ArrayList<>();
+					List<String> dadosE = new ArrayList<>();
+
+					//TODO: arrumar os dados do usuario em listas
+
+					Map<String, Object> dadoss = Map.of("Conteudo", dadosC, "OGPor", dadosO, "Ajuda", dadosA, "Exemplos", dadosE);
+
+					try {
+						ServiceWrapper wrapper = require("SACIP", "storeStudentUseData");
+						wrapper.addParameter("name", "NOMEDOUSUARIO????");
+						wrapper.addParameter("data", dadoss);
+						out.add(wrapper.run().get(0));
+					} catch (ServiceWrapperException e) {
+						// TODO Auto-generated catch block
+						LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
+						e.printStackTrace();
+					}
+					
 
 					//logger.info("key --> " + entry.getKey() + " value-->" + entry.getValue());
 				}
