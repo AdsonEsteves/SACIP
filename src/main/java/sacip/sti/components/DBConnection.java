@@ -149,50 +149,49 @@ public class DBConnection extends Component {
             //Cria query necessaria
             StringBuilder query = new StringBuilder("MATCH 	(n:USER {name: $name }) \n");
             Map<String, Object> updates = new HashMap<String, Object>();
-            updates.put("name", name);
-            query.append(" MERGE");            
+            updates.put("name", name);         
             for (Map.Entry<String, Object> entry : cliqueReg.entrySet()) {
                 switch(entry.getKey())
                 {
                     case "Conteudo":
-                        query.append("\n(n)-[:CLICKS]-(c:CONTENT{name: $name}),");
+                        query.append("\nMERGE (n)-[:CLICKS]-(c:CONTENT{name: $name})");
                     break;
                     
                     case "Exemplos":
-                        query.append("\n(n)-[:CLICKS]-(e:EXEMPLO{name: $name}),");
+                        query.append("\nMERGE (n)-[:CLICKS]-(e:EXEMPLO{name: $name})");
                     break;
                     
                     case "OGPor":
-                        query.append("\n(n)-[:CLICKS]-(o:OGPOR{name: $name}),");
+                        query.append("\nMERGE (n)-[:CLICKS]-(o:OGPOR{name: $name})");
                     break;
                     
                     case "Ajuda":
-                        query.append("\n(n)-[:CLICKS]-(a:AJUDA{name: $name}),");
+                        query.append("\nMERGE (n)-[:CLICKS]-(a:AJUDA{name: $name})");
                     break;
                 }
             }
-            query.deleteCharAt(query.length()-1);
-            query.append("\nSET");
+            //query.deleteCharAt(query.length()-1);
+            //query.append("\nSET");
             for (Map.Entry<String, Object> entry : cliqueReg.entrySet()) {
                 switch(entry.getKey())
                 {
                     case "Conteudo":
-                        query.append("\nc.log = coalesce(c.log, []) + $clog");
+                        query.append("\nSET c.log = coalesce(c.log, []) + $clog");
                         updates.put("clog", cliqueReg.get(entry.getKey())); 
                     break;
                     
                     case "Exemplos":
-                        query.append("\ne.log = coalesce(e.log, []) + $elog");
+                        query.append("\nSET e.log = coalesce(e.log, []) + $elog");
                         updates.put("elog", cliqueReg.get(entry.getKey())); 
                     break;
                     
                     case "OGPor":
-                        query.append("\no.log = coalesce(o.log, []) + $olog");
+                        query.append("\nSET o.log = coalesce(o.log, []) + $olog");
                         updates.put("olog", cliqueReg.get(entry.getKey())); 
                     break;
                     
                     case "Ajuda":
-                        query.append("\na.log = coalesce(a.log, []) + $alog");
+                        query.append("\nSET a.log = coalesce(a.log, []) + $alog");
                         updates.put("alog", cliqueReg.get(entry.getKey())); 
                     break;
                 }
@@ -404,13 +403,13 @@ public class DBConnection extends Component {
     public static void main(String[] args) {
 
         DBConnection conect = new DBConnection();
-        String dado1 = "{'componente':'DEbug', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
-        String dado2 = "{'componente':'DESU', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
-        List<String> dadosL = new ArrayList<>();
-        dadosL.add(dado1);
-        dadosL.add(dado2);
-        Map<String, Object> dados = Map.of("Conteudo", dadosL);
-        System.out.println(conect.addClickInformation("Andre", dados));
+        // String dado1 = "{'componente':'DEbug', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
+        // String dado2 = "{'componente':'DESU', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
+        // List<String> dadosL = new ArrayList<>();
+        // dadosL.add(dado1);
+        // dadosL.add(dado2);
+        // Map<String, Object> dados = Map.of("Conteudo", dadosL);
+        // System.out.println(conect.addClickInformation("Andre", dados));
         conect.showNodes();
         // conect.showNodeRelationships("Andre");
         System.exit(0);

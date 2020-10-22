@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.midas.as.AgentServer;
@@ -31,35 +32,54 @@ public class TrackingAgent extends Agent implements MessageListener {
 
 		if (service.equals("storeData")) {
 			JsonNode dados = (JsonNode) in.get("dados");
-			Iterator<Entry<String, JsonNode>> fields = dados.fields();
 			if (dados.isObject()) {
 				ObjectNode jsonobject = (ObjectNode) dados;
-				Iterator<Entry<String, JsonNode>> nodes = jsonobject.get("cliques").fields();
+				String nome = jsonobject.get("nome").asText();
+				
+				List<String> dadosC = new ArrayList<>();
+				List<String> dadosO = new ArrayList<>();
+				List<String> dadosA = new ArrayList<>();
+				List<String> dadosE = new ArrayList<>();
+				System.out.println(jsonobject.get("cliques").getClass());
+				if(jsonobject.get("cliques").isArray())
+				{
+					ArrayNode cliqueArray = (ArrayNode) jsonobject.get("cliques");
+					for (JsonNode jsonNode : cliqueArray) {
+						String modulo = jsonNode.get("modulo").asText();
+						switch(modulo)
+						{
+							case "Exemplo":
+								dadosE.add(jsonNode.toString());
+							break;
 
-				while (nodes.hasNext()) {
-					Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
-					List<String> dadosC = new ArrayList<>();
-					List<String> dadosO = new ArrayList<>();
-					List<String> dadosA = new ArrayList<>();
-					List<String> dadosE = new ArrayList<>();
+							case "Conteudo":
+								dadosC.add(jsonNode.toString());
+							break;
 
-					//TODO: arrumar os dados do usuario em listas
+							case "Ajuda":
+								dadosA.add(jsonNode.toString());
+							break;
 
-					Map<String, Object> dadoss = Map.of("Conteudo", dadosC, "OGPor", dadosO, "Ajuda", dadosA, "Exemplos", dadosE);
-
-					try {
-						ServiceWrapper wrapper = require("SACIP", "storeStudentUseData");
-						wrapper.addParameter("name", "NOMEDOUSUARIO????");
-						wrapper.addParameter("data", dadoss);
-						out.add(wrapper.run().get(0));
-					} catch (ServiceWrapperException e) {
-						// TODO Auto-generated catch block
-						LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
-						e.printStackTrace();
+							case "OGPor":
+								dadosO.add(jsonNode.toString());
+							break;
+						}
 					}
-					
+				}
 
-					//logger.info("key --> " + entry.getKey() + " value-->" + entry.getValue());
+				
+				Map<String, Object> dadoss = Map.of("Conteudo", dadosC, "OGPor", dadosO, "Ajuda", dadosA, "Exemplos", dadosE);
+
+				try {
+					ServiceWrapper wrapper = require("SACIP", "storeStudentUseData");
+					wrapper.addParameter("name", nome);
+					wrapper.addParameter("data", dadoss);
+					out.add(wrapper.run().get(0));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					out.add(e.getLocalizedMessage());
+					LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
+					e.printStackTrace();
 				}
 
 			}

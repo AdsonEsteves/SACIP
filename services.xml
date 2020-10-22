@@ -98,6 +98,18 @@
 	</service>
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	<!--  SACIP Grouper Agent													-->
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+	<service>
+		<name>storeData</name>
+		<description>Armazena os dados do usuário</description>
+		<entity>TrackingAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP DBConnection Component											-->
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
@@ -153,6 +165,13 @@
 	<service>
 		<name>deleteContent</name>
 		<description>remove um conteudo do banco de dados</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>storeStudentUseData</name>
+		<description>guard os dados de uso do usuario no banco de dados</description>
 		<entity>DBConnection</entity>
 		<scope>components</scope>
 		<organization>SACIP</organization>
