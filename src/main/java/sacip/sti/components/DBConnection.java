@@ -56,6 +56,9 @@ public class DBConnection extends Component {
             case "storeStudentUseData":
                 out.add(addClickInformation((String)in.get("name"), (Map)in.get("data")));
                 break;                            
+            case "storeStudentContentUse":
+                out.add(addContentUseInformation((String)in.get("name"), (JsonNode)in.get("content")));
+                break;                            
             case "createContent":
                 out.add(createContent((Content)in.get("conta")));
                 break;
@@ -143,6 +146,20 @@ public class DBConnection extends Component {
         }
     }
 
+    private Object addContentUseInformation(String name, JsonNode contentdata)
+    {
+        try {
+            String query =  "MATCH (n:USER { name : $name})"+
+                            "MERGE (n)-[:USES]-(k:CONTENTUSE {name:$name})"+
+                            "SET k.log = coalesce(k.log, []) + $klog";
+            var result =  cypher.writequery(query, Map.of("name", name, "klog", contentdata.toString()));
+            return result.toString();
+        } catch (Exception e) {
+            LOG.error("FALHOU AO ADICIONAR DADOS DE CONTEUDO USADO", e);
+            return "FALHOU AO ADICIONAR DADOS DE CONTEUDO USADO"+ e;
+        }
+    }
+
     private Object addClickInformation(String name, Map<String, Object> cliqueReg){
         try 
         {
@@ -154,24 +171,22 @@ public class DBConnection extends Component {
                 switch(entry.getKey())
                 {
                     case "Conteudo":
-                        query.append("\nMERGE (n)-[:CLICKS]-(c:CONTENT{name: $name})");
+                        query.append("\nMERGE (n)-[:CLICKS]-(c:CONTENTLOG{name: $name})");
                     break;
                     
                     case "Exemplos":
-                        query.append("\nMERGE (n)-[:CLICKS]-(e:EXEMPLO{name: $name})");
+                        query.append("\nMERGE (n)-[:CLICKS]-(e:EXEMPLOLOG{name: $name})");
                     break;
                     
                     case "OGPor":
-                        query.append("\nMERGE (n)-[:CLICKS]-(o:OGPOR{name: $name})");
+                        query.append("\nMERGE (n)-[:CLICKS]-(o:OGPORLOG{name: $name})");
                     break;
                     
                     case "Ajuda":
-                        query.append("\nMERGE (n)-[:CLICKS]-(a:AJUDA{name: $name})");
+                        query.append("\nMERGE (n)-[:CLICKS]-(a:AJUDALOG{name: $name})");
                     break;
                 }
             }
-            //query.deleteCharAt(query.length()-1);
-            //query.append("\nSET");
             for (Map.Entry<String, Object> entry : cliqueReg.entrySet()) {
                 switch(entry.getKey())
                 {
@@ -197,7 +212,6 @@ public class DBConnection extends Component {
                 }
             }
             query.append("\nRETURN n");
-            System.out.println(query.toString());
             //realisa o set
             var result = cypher.writequery(query.toString(), updates);
             if(result.isEmpty())
@@ -205,7 +219,7 @@ public class DBConnection extends Component {
                 return "SUCESSO";
             }
 
-            return "SUCESSO";
+            return result.toString();
         } 
         catch (Exception e) 
         {    

@@ -21,8 +21,6 @@ public class RestTracking {
 
 	@PostMapping("/dadosUso")
 	public String armazenaDadosUso(@RequestBody JsonNode dados){
-		// String names[] = {"Componente Clicado", "Modulo", "Timestamp", "Usuario", "IP"};
-		// String modulos[] = {"Exercicio", "ConteudoNE", "Exemplos", "OGPor", "Ajuda"};
 		// String informacoesInteressantes[] = {"Modulos mais utilizados", "Tags de Conteudo mais utilizadas", "Tópicos mais utilizados", "Frequencia de entrada no sistema", "Tempo gasto por tópico",
 		// 									 "Tempo gasto por tag", "Tempo gasto por Modulo", "Exercicios que foi bem?"};
 		try 
@@ -34,21 +32,43 @@ public class RestTracking {
 		} 
 		catch (Exception e) 
 		{
-			LOG.error("Ocorreu erro ao enviar ao agente Tracking", e);
+			LOG.error("Ocorreu erro ao enviar dados de uso ao agente Tracking", e);
 			return e.getLocalizedMessage();
 		}
 	}
 
 	@PostMapping("/exercicioResolvido")
-	public String armazenaExercicioResolvido()
+	public String armazenaExercicioResolvido(@RequestBody JsonNode dados)
 	{
-		return "";
+		try 
+		{
+			ServiceWrapper wrapper = AgentServer.require("SACIP", "storeSolvedExercise");
+			wrapper.addParameter("dados", dados);
+			List out = wrapper.run();
+			return (String) out.get(0);
+		} 
+		catch (Exception e) 
+		{
+			LOG.error("Ocorreu erro ao enviar exercicio resolvido ao agente Tracking", e);
+			return e.getLocalizedMessage();
+		}
 	}
 
 	@PostMapping("/novoConteudoTrilha")
-	public String armazenaNovoConteudoTrilha()
+	public String armazenaNovoConteudoTrilha(@RequestBody JsonNode dados)
 	{
-		return "";
+		try 
+		{
+			ServiceWrapper wrapper = AgentServer.require("SACIP", "storeContentOnPath");
+			wrapper.addParameter("dados", dados);
+			List out = wrapper.run();
+			return (String) out.get(0);
+		} 
+		catch (Exception e) 
+		{
+			LOG.error("Ocorreu erro ao enviar exercicio resolvido ao agente Tracking", e);
+			return e.getLocalizedMessage();
+		}
 	}
 }
 	

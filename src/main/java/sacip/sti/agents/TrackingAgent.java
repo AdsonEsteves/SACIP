@@ -40,49 +40,64 @@ public class TrackingAgent extends Agent implements MessageListener {
 				List<String> dadosO = new ArrayList<>();
 				List<String> dadosA = new ArrayList<>();
 				List<String> dadosE = new ArrayList<>();
-				System.out.println(jsonobject.get("cliques").getClass());
-				if(jsonobject.get("cliques").isArray())
+				if(jsonobject.has("cliques"))
 				{
-					ArrayNode cliqueArray = (ArrayNode) jsonobject.get("cliques");
-					for (JsonNode jsonNode : cliqueArray) {
-						String modulo = jsonNode.get("modulo").asText();
-						switch(modulo)
-						{
-							case "Exemplo":
-								dadosE.add(jsonNode.toString());
-							break;
+					if(jsonobject.get("cliques").isArray())
+					{
+						ArrayNode cliqueArray = (ArrayNode) jsonobject.get("cliques");
+						for (JsonNode jsonNode : cliqueArray) {
+							String modulo = jsonNode.get("modulo").asText();
+							switch(modulo)
+							{
+								case "Exemplo":
+									dadosE.add(jsonNode.toString());
+								break;
 
-							case "Conteudo":
-								dadosC.add(jsonNode.toString());
-							break;
+								case "Conteudo":
+									dadosC.add(jsonNode.toString());
+								break;
 
-							case "Ajuda":
-								dadosA.add(jsonNode.toString());
-							break;
+								case "Ajuda":
+									dadosA.add(jsonNode.toString());
+								break;
 
-							case "OGPor":
-								dadosO.add(jsonNode.toString());
-							break;
+								case "OGPor":
+									dadosO.add(jsonNode.toString());
+								break;
+							}
 						}
 					}
-				}
+					
+					Map<String, Object> dadoss = Map.of("Conteudo", dadosC, "OGPor", dadosO, "Ajuda", dadosA, "Exemplos", dadosE);
 
-				
-				Map<String, Object> dadoss = Map.of("Conteudo", dadosC, "OGPor", dadosO, "Ajuda", dadosA, "Exemplos", dadosE);
-
-				try {
-					ServiceWrapper wrapper = require("SACIP", "storeStudentUseData");
-					wrapper.addParameter("name", nome);
-					wrapper.addParameter("data", dadoss);
-					out.add(wrapper.run().get(0));
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					out.add(e.getLocalizedMessage());
-					LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
-					e.printStackTrace();
+					try {
+						ServiceWrapper wrapper = require("SACIP", "storeStudentUseData");
+						wrapper.addParameter("name", nome);
+						wrapper.addParameter("data", dadoss);
+						out.add(wrapper.run().get(0));
+					} catch (Exception e) {
+						out.add(e.getLocalizedMessage());
+						LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
+						e.printStackTrace();
+					}
 				}
+				if(jsonobject.has("conteudo"))
+				{
+					try {
+						ServiceWrapper wrapper = require("SACIP", "storeStudentContentUse");
+						wrapper.addParameter("name", nome);
+						wrapper.addParameter("content", jsonobject.get("conteudo"));
+						out.add(wrapper.run().get(0));
+					} catch (Exception e) {
+						out.add(e.getLocalizedMessage());
+						LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
+						e.printStackTrace();
+					}
+				}		
 
 			}
+
+
 		}
 	}
 
