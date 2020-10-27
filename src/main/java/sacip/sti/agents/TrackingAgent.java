@@ -1,11 +1,8 @@
 package sacip.sti.agents;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -19,9 +16,10 @@ import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
 import org.midas.as.manager.execution.ServiceWrapper;
-import org.midas.as.manager.execution.ServiceWrapperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import sacip.sti.dataentities.Student;
 
 public class TrackingAgent extends Agent implements MessageListener {
 
@@ -30,7 +28,8 @@ public class TrackingAgent extends Agent implements MessageListener {
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
 
-		if (service.equals("storeData")) {
+		if (service.equals("storeData")) 
+		{
 			JsonNode dados = (JsonNode) in.get("dados");
 			if (dados.isObject()) {
 				ObjectNode jsonobject = (ObjectNode) dados;
@@ -99,24 +98,135 @@ public class TrackingAgent extends Agent implements MessageListener {
 
 
 		}
+		else if(service.equals("storeSolvedExercise"))
+		{
+			JsonNode dados = (JsonNode) in.get("dados");
+			String nome =  dados.get("nome").asText();
+
+			try {
+				ServiceWrapper wrapper = require("SACIP", "editStudentListAttr");
+				wrapper.addParameter("name", nome);
+				wrapper.addParameter("attrName", "exerciciosResolvidos");
+				wrapper.addParameter("newValue", dados.get("conteudo"));
+				out.add(wrapper.run().get(0));
+			} catch (Exception e) {
+				out.add(e.getLocalizedMessage());
+				LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
+				e.printStackTrace();
+			}
+		}
+		else if(service.equals("storeContentOnPath"))
+		{
+			JsonNode dados = (JsonNode) in.get("dados");
+			String nome =  dados.get("nome").asText();
+			
+			try {
+				ServiceWrapper wrapper = require("SACIP", "editStudentListAttr");
+				wrapper.addParameter("name", nome);
+				wrapper.addParameter("attrName", "trilha");
+				wrapper.addParameter("newValue", dados.get("conteudo"));
+				out.add(wrapper.run().get(0));
+			} catch (Exception e) {
+				out.add(e.getLocalizedMessage());
+				LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
+				e.printStackTrace();
+			}
+		}
+		else if(service.equals("storeStudentErrors"))
+		{
+			JsonNode dados = (JsonNode) in.get("dados");
+			String nome =  dados.get("nome").asText();
+			
+			try {
+				ServiceWrapper wrapper = require("SACIP", "editStudentListAttr");
+				wrapper.addParameter("name", nome);
+				wrapper.addParameter("attrName", "errosDoEstudante");
+				wrapper.addParameter("newValue", dados.get("conteudo"));
+				out.add(wrapper.run().get(0));
+			} catch (Exception e) {
+				out.add(e.getLocalizedMessage());
+				LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS", e);
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
-		// TODO Auto-generated method stub
+
 		Board.addMessageListener("SACIP", this);
 		
-		// while(alive)
-		// {
-		// 	Thread.sleep(2000);
-		// }
+		while(alive)
+		{
+			try 
+			{
+				ServiceWrapper wrapper = require("SACIP", "getAluno");
+				Student estudante = (Student) wrapper.run();
+				descobrirModulosMaisUtilizados(estudante);
+				descobrirTagsMaisUtilizadas(estudante);
+				descobrirTopicosMaisUtilizados(estudante);
+				verificarFrequenciaDoAluno(estudante);
+				descobrirTempoGastoPorTopico(estudante);
+				descobrirTempoGastoPorTag(estudante);
+				descobrirTempoGastoPorModulo(estudante);
+				descobrirTiposDeExercicioQueMelhorEPiorSaiu(estudante);
+				
+			} catch (Exception e) {
+				
+				LOG.error("Ocorreu um erro no ciclo de vida do Agente Rastreador", e);
+			}
+			Thread.sleep(300000);
+		}
 		
 	}
-
+	
 	@Override
 	public void boardChanged(Message msg) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private void descobrirTempoGastoPorTag(Student estudante) {
+		//Analisar os conteudos usados, horarios de entrada e saida
+	}
+
+	private void descobrirTempoGastoPorModulo(Student estudante) {
+		//Analisar os conteudos usados, horarios de entrada e saida
+	}
+
+	private void descobrirTempoGastoPorTopico(Student estudante) {
+
+		//Analisar os conteudos usados, horarios de entrada e saida
+
+	}
+
+	private void descobrirTiposDeExercicioQueMelhorEPiorSaiu(Student estudante) {
+
+		//Analisar trilhas, exercicios resolvidos e erros
+
+	}
+
+	private void verificarFrequenciaDoAluno(Student estudante) {
+
+		//buscar as datas de entrada e saida do sistema do aluno
+
+	}
+
+	private void descobrirTopicosMaisUtilizados(Student estudante) {
+
+		//buscar na trilha os Topicos de cada conteudo
+	}
+
+	private void descobrirTagsMaisUtilizadas(Student estudante) {
+
+		//buscar na trilha as tags de cada conteudo
+
+	}
+
+	private void descobrirModulosMaisUtilizados(Student estudante) {
+		
+		//buscar cada um dos cliques do alunos e verificar o tempo total
+
 	}
 
 }

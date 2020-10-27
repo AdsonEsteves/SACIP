@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import org.midas.as.AgentServer;
@@ -47,6 +48,10 @@ public class DBConnection extends Component {
             
             case "editStudent":
                 out.add(editUser((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
+                break;
+
+            case "editStudentListAttr":
+                out.add(editUserListAttr((String)in.get("name"), (String)in.get("attrName"), (JsonNode)in.get("newValue")));
                 break;
             
             case "deleteStudent":
@@ -276,6 +281,23 @@ public class DBConnection extends Component {
         {
             LOG.error("FALHOU edicao de estudante", e);
             return "FALHOU edicao de estudante "+e.getLocalizedMessage();
+        }
+    }
+
+    private String editUserListAttr(String name, String atributeName, JsonNode newValue)
+    {
+        try 
+        {
+            var result = cypher.writequery("MATCH (n:USER { name: $name })"+
+                                            "\nSET n.$atribute = coalesce(n.$atribute, []) + $newvalue"+
+                                            "\nRETURN n.name, n.$atribute"
+                        , Map.of("name", name, "atribute", atributeName, "newValue", newValue.toString()));
+            return result.toString();            
+        } 
+        catch (Exception e) 
+        {
+            LOG.error("FALHOU edicao de lista de estudante ", e);
+            return "FALHOU edicao de lista de estudante "+e.getLocalizedMessage();
         }
     }
 

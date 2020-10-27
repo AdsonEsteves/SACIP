@@ -98,12 +98,33 @@
 	</service>
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-	<!--  SACIP Grouper Agent													-->
+	<!--  SACIP Tracking Agent													-->
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 	<service>
 		<name>storeData</name>
 		<description>Armazena os dados do usuário</description>
+		<entity>TrackingAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>storeSolvedExercise</name>
+		<description>Armazena os exercícios resolvidos do usuário</description>
+		<entity>TrackingAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>storeContentOnPath</name>
+		<description>Armazena os conteúdos na trilha usuário</description>
+		<entity>TrackingAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>storeStudentErrors</name>
+		<description>Armazena os erros do usuário</description>
 		<entity>TrackingAgent</entity>
 		<scope>mas</scope>
 		<organization>SACIP</organization>
