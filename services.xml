@@ -163,6 +163,27 @@
 		<organization>SACIP</organization>
 	</service>
 	<service>
+		<name>storeStudentUseData</name>
+		<description>guard os dados de uso do usuario no banco de dados</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>editStudentListAttr</name>
+		<description>guard os dados de uso do usuario no banco de dados</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>storeStudentContentUse</name>
+		<description>guard os dados de uso do usuario no banco de dados</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
 		<name>createContent</name>
 		<description>registra um novo conteudo no banco de dados</description>
 		<entity>DBConnection</entity>
@@ -190,12 +211,6 @@
 		<scope>components</scope>
 		<organization>SACIP</organization>
 	</service>
-	<service>
-		<name>storeStudentUseData</name>
-		<description>guard os dados de uso do usuario no banco de dados</description>
-		<entity>DBConnection</entity>
-		<scope>components</scope>
-		<organization>SACIP</organization>
-	</service>
-
+	
+	
 </services>

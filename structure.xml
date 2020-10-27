@@ -4,8 +4,8 @@
 	<localPort>7101</localPort>
 
 	<serverPort>7100</serverPort>
-	<!--<serverAddress>127.0.0.1</serverAddress>-->
-	<serverAddress>35.192.97.232</serverAddress>
+	<serverAddress>127.0.0.1</serverAddress>
+	<!--<serverAddress>35.192.97.232</serverAddress>-->
 		
 	<organizations>		
 		<organization>

@@ -272,8 +272,8 @@ public class DBConnection extends Component {
         try 
         {
             var result = cypher.writequery("MATCH (n:USER { name: $name })"+
-                                            "SET n.$atribute = $newValue"+
-                                            "RETURN n.name, n.$atribute"
+                                            "SET n."+atributeName+" = $newValue"+
+                                            "RETURN n.name, n."+atributeName+""
                         , Map.of("name", name, "atribute", atributeName, "newValue", newValue));
             return result.toString();            
         } 
@@ -289,8 +289,8 @@ public class DBConnection extends Component {
         try 
         {
             var result = cypher.writequery("MATCH (n:USER { name: $name })"+
-                                            "\nSET n.$atribute = coalesce(n.$atribute, []) + $newvalue"+
-                                            "\nRETURN n.name, n.$atribute"
+                                            "\nSET n."+atributeName+" = coalesce(n."+atributeName+", []) + $newValue"+
+                                            "\nRETURN n.name, n."+atributeName
                         , Map.of("name", name, "atribute", atributeName, "newValue", newValue.toString()));
             return result.toString();            
         } 
