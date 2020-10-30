@@ -1,10 +1,10 @@
 <agentserver>
 	<name>SACIP</name>
 
-	<localPort>7101</localPort>
+	<localPort>$localport</localPort>
 
-	<serverPort>7100</serverPort>
-	<serverAddress>127.0.0.1</serverAddress>
+	<serverPort>$serverport</serverPort>
+	<serverAddress>$serverAddress</serverAddress>
 	<!--<serverAddress>35.192.97.232</serverAddress>-->
 		
 	<organizations>		

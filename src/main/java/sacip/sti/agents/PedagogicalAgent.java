@@ -4,17 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.midas.as.agent.board.Board;
+import org.midas.as.AgentServer;
 import org.midas.as.agent.board.Message;
 import org.midas.as.agent.board.MessageListener;
 import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
 import org.midas.as.manager.execution.ServiceWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import sacip.Launcher;
 
 public class PedagogicalAgent extends Agent implements MessageListener{
 
 	List<String> alunosOnline = new ArrayList<>();
+	private int instancia;
+	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
+
+	public PedagogicalAgent() {
+		super();
+		this.instancia = Launcher.instancia;
+	}
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
@@ -48,13 +59,13 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 
 		// Board.addMessageListener("PortugolSTI", this);
 		// for (String aluno : alunosOnline) {
-		// 	try 
-		// 	{
+			try 
+			{
 		// 		while(Board.getContextAttribute(aluno+"eventState").equals("Programando"))
 		// 		{
-		// 			ServiceWrapper serviceWrapper = require("LocalAgents", "getAlunoData");
-		// 			serviceWrapper.addParameter("aluno", aluno);
-		// 			List data = serviceWrapper.run();
+					// ServiceWrapper serviceWrapper = require("SACIP", "storeStudentErrors"+this.instancia);
+					
+					// List data = serviceWrapper.run();
 		// 			List dicas = checkDicas(data);
 		// 			if(dicas.size()>0)
 		// 			{
@@ -63,11 +74,11 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 		// 			Thread.sleep(2000);
 		// 		}
 				
-		// 	}
-		// 	catch(Exception e)
-		// 	{
-		// 		throw new LifeCycleException("Não foi possível analisar o aluno"+aluno, e);
-		// 	}
+			}
+			catch(Exception e)
+			{
+				LOG.error("Não foi possível analisar o aluno", e);
+			}
 		// }		
 
 	}

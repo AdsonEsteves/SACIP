@@ -19,11 +19,18 @@ import org.midas.as.manager.execution.ServiceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sacip.Launcher;
 import sacip.sti.dataentities.Student;
 
 public class TrackingAgent extends Agent implements MessageListener {
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
+	private int instancia;
+
+	public TrackingAgent() {
+		super();
+		this.instancia = Launcher.instancia;
+	}
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
@@ -132,7 +139,7 @@ public class TrackingAgent extends Agent implements MessageListener {
 				e.printStackTrace();
 			}
 		}
-		else if(service.equals("storeStudentErrors"))
+		else if(service.equals("storeStudentErrors"+this.instancia))
 		{
 			JsonNode dados = (JsonNode) in.get("dados");
 			String nome =  dados.get("nome").asText();
@@ -158,24 +165,25 @@ public class TrackingAgent extends Agent implements MessageListener {
 		
 		while(alive)
 		{
+			LOG.info("INSTANCIA "+this.instancia+" viva");
+			Thread.sleep(1000);
 			try 
 			{
-				ServiceWrapper wrapper = require("SACIP", "getAluno");
-				Student estudante = (Student) wrapper.run();
-				descobrirModulosMaisUtilizados(estudante);
-				descobrirTagsMaisUtilizadas(estudante);
-				descobrirTopicosMaisUtilizados(estudante);
-				verificarFrequenciaDoAluno(estudante);
-				descobrirTempoGastoPorTopico(estudante);
-				descobrirTempoGastoPorTag(estudante);
-				descobrirTempoGastoPorModulo(estudante);
-				descobrirTiposDeExercicioQueMelhorEPiorSaiu(estudante);
+				// ServiceWrapper wrapper = require("SACIP", "getAluno");
+				// Student estudante = (Student) wrapper.run();
+				// descobrirModulosMaisUtilizados(estudante);
+				// descobrirTagsMaisUtilizadas(estudante);
+				// descobrirTopicosMaisUtilizados(estudante);
+				// verificarFrequenciaDoAluno(estudante);
+				// descobrirTempoGastoPorTopico(estudante);
+				// descobrirTempoGastoPorTag(estudante);
+				// descobrirTempoGastoPorModulo(estudante);
+				// descobrirTiposDeExercicioQueMelhorEPiorSaiu(estudante);
 				
 			} catch (Exception e) {
 				
 				LOG.error("Ocorreu um erro no ciclo de vida do Agente Rastreador", e);
-			}
-			Thread.sleep(300000);
+			}			
 		}
 		
 	}
