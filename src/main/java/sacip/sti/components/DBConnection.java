@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.lang.model.util.ElementScanner14;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.midas.as.AgentServer;
@@ -57,10 +59,16 @@ public class DBConnection extends Component {
             
             case "storeStudentUseData":
                 out.add(addClickInformation((String)in.get("name"), (Map)in.get("data")));
-                break;                            
+                break;
+
             case "storeStudentContentUse":
                 out.add(addContentUseInformation((String)in.get("name"), (JsonNode)in.get("content")));
-                break;                            
+                break;
+            
+            case "getStudentsContentUse":
+                out.add(getUsersUseInformation((String)in.get("name"), (String)in.get("type")));
+                break;
+
             case "createContent":
                 out.add(createContent((Content)in.get("conta")));
                 break;
@@ -227,6 +235,32 @@ public class DBConnection extends Component {
         {    
             LOG.error("Não foi possível registrar os cliques do estudante no banco", e);
             return "FALHOU registro de cliques do estudante "+e.getLocalizedMessage();        
+        }
+    }
+
+    private Object getUsersUseInformation(String name, String type)
+    {
+        try {
+            if(type.equals("CLICK"))
+            {
+                var result = cypher.readquery("MATCH [:CLICKS]-(n {name:$name})"+
+                                              "RETURN n.log", Map.of("name", name));
+                
+                return result.toString();
+            }
+            else if(type.equals("USE"))
+            {
+                var result = cypher.readquery("MATCH (k:CONTENTUSE {name:$name}"+
+                                              "RETURN k.log", Map.of("name", name));
+                
+                return result.toString();
+            }
+
+            throw new ServiceException("Usuario não possuem esse tipo de informação");
+            
+        } catch (Exception e) {
+            LOG.error("Não foi possível registrar os cliques do estudante no banco", e);
+            return "FALHOU registro de cliques do estudante "+e.getLocalizedMessage();    
         }
     }
 

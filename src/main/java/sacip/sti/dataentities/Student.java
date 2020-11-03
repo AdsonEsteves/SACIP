@@ -1,9 +1,9 @@
 package sacip.sti.dataentities;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Map;
 
 import org.midas.util.MidasBean;
 
@@ -23,6 +23,7 @@ public class Student extends MidasBean{
     private List<String> exerciciosResolvidos;
     private int tempoResolucao;
     private List<String> errosDoEstudante;
+    private Map<String, Long> tempoTag;
 
     public Student() {
         super();
@@ -40,6 +41,7 @@ public class Student extends MidasBean{
         this.exerciciosResolvidos = new ArrayList<>();
         this.tempoResolucao = 0;
         this.errosDoEstudante = new ArrayList<>();
+        this.tempoTag = new LinkedHashMap<>();
     }
 
     public String getName() {

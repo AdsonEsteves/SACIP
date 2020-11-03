@@ -30,13 +30,13 @@ public class Launcher {
 			servicesXML = servicesXMLtemplate.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
 			AgentServer.initialize(true, true, structureXML, servicesXML);
 
-			instancia++;
+			// instancia++;
 
-			structureXML = structureXMLtemplate.replace("$localport", "7102").replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
-			servicesXML = servicesXMLtemplate.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
-			AgentServer.initialize(true, true, structureXML, servicesXML);
+			// structureXML = structureXMLtemplate.replace("$localport", "7102").replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
+			// servicesXML = servicesXMLtemplate.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
+			// AgentServer.initialize(true, true, structureXML, servicesXML);
 
-			SpringApplication.run(Launcher.class, args);
+			// SpringApplication.run(Launcher.class, args);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
