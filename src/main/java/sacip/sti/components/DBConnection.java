@@ -52,6 +52,10 @@ public class DBConnection extends Component {
             case "editStudentListAttr":
                 out.add(editUserListAttr((String)in.get("name"), (String)in.get("attrName"), (JsonNode)in.get("newValue")));
                 break;
+
+            case "getLogsDoAluno":
+                out.add(getUserLogInformation((String)in.get("name"), (String)in.get("type")));
+                break;
             
             case "deleteStudent":
                 out.add(deleteUser((String) in.get("name")));
@@ -66,7 +70,7 @@ public class DBConnection extends Component {
                 break;
             
             case "getStudentsContentUse":
-                out.add(getUsersUseInformation((String)in.get("name"), (String)in.get("type")));
+                out.add(getUserLogInformation((String)in.get("name"), (String)in.get("type")));
                 break;
 
             case "createContent":
@@ -238,7 +242,7 @@ public class DBConnection extends Component {
         }
     }
 
-    private Object getUsersUseInformation(String name, String type)
+    private Object getUserLogInformation(String name, String type)
     {
         try {
             if(type.equals("CLICK"))
@@ -256,7 +260,7 @@ public class DBConnection extends Component {
                 return result.toString();
             }
 
-            throw new ServiceException("Usuario não possuem esse tipo de informação");
+            throw new ServiceException("Usuario não possui esse tipo de informação");
             
         } catch (Exception e) {
             LOG.error("Não foi possível registrar os cliques do estudante no banco", e);

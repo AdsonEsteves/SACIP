@@ -1,31 +1,6 @@
 <services>
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-	<!--  SACIP Pedagogical Agent												-->
-	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-
-	<!-- <service>
-		<name>getAluno</name>
-		<description>retorna o estudante em uma classe Student</description>
-		<entity>PedagogicalAgent</entity>
-		<scope>mas</scope>
-		<organization>SACIP</organization>
-		<parameters>
-			<parameter>
-				<name>codigo</name><class>java.lang.String</class>
-			</parameter>
-		</parameters>
-	</service> -->
-
-	<service>
-		<name>getAluno</name>
-		<description>retorna o estudante em uma classe Student</description>
-		<entity>PedagogicalAgent</entity>
-		<scope>mas</scope>
-		<organization>SACIP</organization>
-	</service>	
-
-	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP Interface Agent													-->
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
@@ -80,39 +55,6 @@
 		<name>groupStudents</name>
 		<description>Agrupa os alunos em grupos</description>
 		<entity>GrouperAgent</entity>
-		<scope>mas</scope>
-		<organization>SACIP</organization>
-	</service>
-
-	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-	<!--  SACIP Tracking Agent													-->
-	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-
-	<service>
-		<name>storeData</name>
-		<description>Armazena os dados do usuário</description>
-		<entity>TrackingAgent</entity>
-		<scope>mas</scope>
-		<organization>SACIP</organization>
-	</service>
-	<service>
-		<name>storeSolvedExercise</name>
-		<description>Armazena os exercícios resolvidos do usuário</description>
-		<entity>TrackingAgent</entity>
-		<scope>mas</scope>
-		<organization>SACIP</organization>
-	</service>
-	<service>
-		<name>storeContentOnPath</name>
-		<description>Armazena os conteúdos na trilha usuário</description>
-		<entity>TrackingAgent</entity>
-		<scope>mas</scope>
-		<organization>SACIP</organization>
-	</service>
-	<service>
-		<name>storeStudentErrors</name>
-		<description>Armazena os erros do usuário</description>
-		<entity>TrackingAgent</entity>
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>

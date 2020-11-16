@@ -1,0 +1,45 @@
+<agentserver>
+	<name>SACIP</name>
+
+	<localPort>$localport</localPort>
+
+	<serverPort>$serverport</serverPort>
+	<serverAddress>$serverAddress</serverAddress>
+	<!--<serverAddress>35.192.97.232</serverAddress>-->
+		
+	<organizations>		
+		<organization>
+			<name>SACIP</name>
+			<package>sacip.sti</package>
+			
+			<agents>
+				<agent>
+					<name>InterfaceAgent</name>
+					<package>agents</package>
+					<className>InterfaceAgent</className>
+					<protocol>native</protocol>
+				</agent>
+				<agent>
+					<name>RecommenderAgent</name>
+					<package>agents</package>
+					<className>RecommenderAgent</className>
+					<protocol>native</protocol>
+				</agent>
+				<agent>
+					<name>GrouperAgent</name>
+					<package>agents</package>
+					<className>GrouperAgent</className>
+					<protocol>native</protocol>
+				</agent>
+			</agents>
+			<components>
+				<component>
+					<name>DBConnection</name>
+					<package>components</package>
+					<className>DBConnection</className>
+					<protocol>native</protocol>
+				</component>
+			</components>
+		</organization>			
+	</organizations>
+</agentserver>

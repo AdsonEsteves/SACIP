@@ -15,12 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sacip.Launcher;
+import sacip.sti.dataentities.Student;
 
 public class PedagogicalAgent extends Agent implements MessageListener{
 
 	List<String> alunosOnline = new ArrayList<>();
-	private int instancia;
+	private String instancia;
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
+	private Student student;
 
 	public PedagogicalAgent() {
 		super();
@@ -31,26 +33,9 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 	public void provide(String service, Map in, List out) throws ServiceException {
 		// TODO Auto-generated method stub
 		
-		if(service.equals("suggestExercise"))
+		if(service.equals("getAluno"))
 		{
-			try
-			{
-				System.out.println("verificando informações do aluno");				
-				ServiceWrapper serviceWrapper = require("LocalAgents", "getAluno");
-				List alunoInfo = serviceWrapper.run();
-				
-				System.out.println("requisitando exercício");				
-				ServiceWrapper serviceWrapper2 = require("PublicAgents", "getRecommendedExercises");
-				serviceWrapper2.addParameter("aluno", alunoInfo.get(0));
-				List exercicio = serviceWrapper2.run();
-				
-				System.out.println("apresentando exercício");
-			}
-			catch(Exception e)
-			{
-				throw new ServiceException("Não foi possível pegar o exercício recomendado - PAgent",e);
-			}
-			
+			out.add(getAluno());			
 		}
 	}
 
@@ -89,14 +74,9 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 		
 	}
 
-	public List<String> checkDicas(Object resposta)
+	private Student getAluno()
 	{
-		return new ArrayList<>();
-	}
-
-	public void sendDicas(Object dicas)
-	{
-		
+		return this.student;
 	}
 
 }

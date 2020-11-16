@@ -1,0 +1,31 @@
+<agentserver>
+	<name>SACIP</name>
+
+	<localPort>$localport</localPort>
+
+	<serverPort>$serverport</serverPort>
+	<serverAddress>$serverAddress</serverAddress>
+	<!--<serverAddress>35.192.97.232</serverAddress>-->
+		
+	<organizations>		
+		<organization>
+			<name>SACIP</name>
+			<package>sacip.sti</package>
+			
+			<agents>
+				<agent>
+					<name>PedagogicalAgent</name>
+					<package>agents</package>
+					<className>PedagogicalAgent</className>
+					<protocol>native</protocol>
+				</agent>
+				<agent>
+					<name>TrackingAgent</name>
+					<package>agents</package>
+					<className>TrackingAgent</className>
+					<protocol>native</protocol>
+				</agent>				
+			</agents>
+		</organization>			
+	</organizations>
+</agentserver>
