@@ -31,40 +31,24 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub		
+
+		switch (service) {
+			case "getAluno":
+				out.add(getAluno());
+				break;
+
+			case "suggestContent":
+				out.add(suggestContent());
+				break;
 		
-		if(service.equals("getAluno"))
-		{
-			out.add(getAluno());			
+			default:
+				throw new ServiceException("Serviço "+service+" não foi implementado no agente pedagógico.");
 		}
 	}
 
 	@Override
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
-
-		// Board.addMessageListener("PortugolSTI", this);
-		// for (String aluno : alunosOnline) {
-			try 
-			{
-		// 		while(Board.getContextAttribute(aluno+"eventState").equals("Programando"))
-		// 		{
-					// ServiceWrapper serviceWrapper = require("SACIP", "storeStudentErrors"+this.instancia);
-					
-					// List data = serviceWrapper.run();
-		// 			List dicas = checkDicas(data);
-		// 			if(dicas.size()>0)
-		// 			{
-		// 				sendDicas(dicas);
-		// 			}					
-		// 			Thread.sleep(2000);
-		// 		}
-				
-			}
-			catch(Exception e)
-			{
-				LOG.error("Não foi possível analisar o aluno", e);
-			}
-		// }		
 
 	}
 
@@ -72,6 +56,34 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 	public void boardChanged(Message msg) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private String suggestContent()
+	{
+		try 
+		{
+			//Pegar grupo de alunos
+			ServiceWrapper wrapper = require("SACIP", "getStudentGroups");
+			wrapper.addParameter("estudante", getAluno());
+			List grupo = wrapper.run();
+	
+			//Pedir recomendação para o recomendador
+			ServiceWrapper wrapper2 = require("SACIP", "getRecommendedContent");
+			wrapper2.addParameter("estudante", getAluno());
+			wrapper2.addParameter("grupo", grupo);
+
+			String recomendacoes = (String) wrapper.run().get(0);
+
+			return recomendacoes;
+						
+		} 
+		catch (Exception e) 
+		{
+			LOG.error("ERRO NO PEDAGOGICAL AGENT AO SUGERIR EXERCÍCIOS", e);
+			e.printStackTrace();
+			return e.getLocalizedMessage();
+		}
+
 	}
 
 	private Student getAluno()

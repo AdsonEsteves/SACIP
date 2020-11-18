@@ -24,6 +24,13 @@
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>	
+	<service>
+		<name>suggestContent</name>
+		<description>retorna conteúdos sugeridos para o aluno de acordo com suas características</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>	
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP Tracking Agent													-->

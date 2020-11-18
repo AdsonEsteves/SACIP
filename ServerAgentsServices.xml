@@ -51,13 +51,6 @@
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>
-	<service>
-		<name>groupStudents</name>
-		<description>Agrupa os alunos em grupos</description>
-		<entity>GrouperAgent</entity>
-		<scope>mas</scope>
-		<organization>SACIP</organization>
-	</service>
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP DBConnection Component											-->
