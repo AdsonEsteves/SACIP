@@ -27,12 +27,14 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 	public PedagogicalAgent() {
 		super();
 		this.instancia = Launcher.instancia;
+		List<String> preferencias = new ArrayList<>();
+		preferencias.add("Animação");
+		preferencias.add("Filmes");
+		this.student = new Student("Adson", "123456", "link", "masculino", 24, "bacharelado", preferencias);
 	}
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		// TODO Auto-generated method stub		
-
 		switch (service) {
 			case "getAluno":
 				out.add(getAluno());
@@ -63,16 +65,20 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 		try 
 		{
 			//Pegar grupo de alunos
-			ServiceWrapper wrapper = require("SACIP", "getStudentGroups");
-			wrapper.addParameter("estudante", getAluno());
-			List grupo = wrapper.run();
-	
-			//Pedir recomendação para o recomendador
-			ServiceWrapper wrapper2 = require("SACIP", "getRecommendedContent");
-			wrapper2.addParameter("estudante", getAluno());
-			wrapper2.addParameter("grupo", grupo);
+			ServiceWrapper servicoGetGroups = require("SACIP", "getStudentGroups");
+			servicoGetGroups.addParameter("estudante", getAluno());
+			List grupo = servicoGetGroups.run();
 
-			String recomendacoes = (String) wrapper.run().get(0);
+			//Pedir recomendação para o recomendador
+			ServiceWrapper servicoGetContent = require("SACIP", "getRecommendedContent");
+			servicoGetContent.addParameter("estudante", getAluno());
+			servicoGetContent.addParameter("grupo", grupo);
+			List resultado = servicoGetContent.run();
+			if(resultado.isEmpty())
+			{
+				return "vazio";
+			}
+			String recomendacoes = (String) resultado.get(0);
 
 			return recomendacoes;
 						

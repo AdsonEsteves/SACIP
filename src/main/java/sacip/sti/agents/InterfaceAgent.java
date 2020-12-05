@@ -3,6 +3,8 @@ package sacip.sti.agents;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import org.midas.as.AgentServer;
 import org.midas.as.agent.board.Message;
 import org.midas.as.agent.board.MessageListener;
@@ -20,10 +22,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 
 @RestController
 @RequestMapping("/interface")
+@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 public class InterfaceAgent extends Agent implements MessageListener{
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
@@ -51,7 +55,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 
 		try {
 			ServiceWrapper wrapper = AgentServer.require("SACIP", "createStudent");
-			wrapper.addParameter("novaConta", conta);
+			wrapper.addParameter("conta", conta);
 			List run = wrapper.run();
 			return run.toString();
 		} catch (Exception e) {
@@ -68,6 +72,21 @@ public class InterfaceAgent extends Agent implements MessageListener{
     @PutMapping("/contas")
 	public String editarConta(String name) {
 		return "test";
+	}
+
+	@PostMapping("/conteudos")
+	@ResponseBody
+	public String criaNovoConteudo(@RequestBody Content conteudo) {
+
+		try {
+			ServiceWrapper wrapper = AgentServer.require("SACIP", "createContent");
+			wrapper.addParameter("conteudo", conteudo);
+			List run = wrapper.run();
+			return run.toString();
+		} catch (Exception e) {
+			LOG.error("Falhou criar conteudo em REST Interface", e);
+			return "Falhou criar conteudo: \n"+e.getLocalizedMessage();
+		}
 	}
 	
 	@GetMapping("/pergunta")

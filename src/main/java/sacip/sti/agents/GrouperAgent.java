@@ -7,19 +7,21 @@ import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
 
+import sacip.sti.dataentities.Student;
+
 public class GrouperAgent extends Agent{
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
 		// TODO Auto-generated method stub
-		if(service.equals("classifyStudents"))
+		if(service.equals("getStudentGroups"))
 		{
 			System.out.println("Buscando alunos no banco");
 			System.out.println("Classificando alunos");
 			
-			String aluno = (String) in.get("aluno");
+			Student aluno = (Student) in.get("estudante");
 			
-			System.out.println("Selecionando cluster de aluno "+aluno+" requisitado");
+			System.out.println("Selecionando cluster de aluno "+aluno.getName()+" requisitado");
 			System.out.println("retornando grupo");
 		}
 	}

@@ -1,16 +1,21 @@
 package sacip.sti.agents;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
+import org.midas.as.manager.execution.ServiceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 
 public class RecommenderAgent extends Agent {
@@ -32,11 +37,12 @@ public class RecommenderAgent extends Agent {
 
 	@Override
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
-		// TODO Auto-generated method stub
 		//Board.setContextAttribute("eventState", "checkErrors");
 	}
 
 	private String getConteudosRecomendados(List<Student> grupo, Student aluno) {
+
+		List<String> preferenciasAluno = aluno.getPreferencias();
 		try 
 		{
 			List<String> caracteristicas = new ArrayList<>();
@@ -49,18 +55,44 @@ public class RecommenderAgent extends Agent {
 			}
 			else
 			{
-				caracteristicas.add(aluno.getPreferenciasAsString());
+				caracteristicas.addAll(preferenciasAluno);
 			}
-			
-			System.out.println("buscando caracteristicas em conteudos");
-	
+				
 			//Fazer chamada ao banco
+			ServiceWrapper wrapper = require("SACIP", "getContentByTags");
+			wrapper.addParameter("tags", caracteristicas);
+			List resultado = wrapper.run();
+			if(resultado.get(0)==null || resultado.get(0) instanceof String)
+			{
+				return "não há conteúdos";
+			}
+			List<Content> conteudos =  (List<Content>) resultado.get(0);
+
+			List<Content> sortedContent = new ArrayList<Content>(){
+				@Override
+				public boolean add(Content e) {
+					super.add(e);
+					Collections.sort(this, new Comparator<Content>(){
+						@Override
+						public int compare(Content o1, Content o2) {
+							return o2.pontos-o1.pontos;
+						}
+					});
+					return true;
+				}
+			};
 			
-			System.out.println("retornando conteudos");
+			for (Content content : conteudos) {
+				content.pontos += calculateTagPoints(content.getTags(), preferenciasAluno);
+				content.pontos += calculateDistancePoints(aluno.getTrilha(), content);
+				
+				sortedContent.add(content);
+			}
+
+			//retornando conteudos
+			String exercicio = sortedContent.toString();
 	
-			String exercicio = "";
-	
-			return exercicio;			
+			return exercicio;
 		} 
 		catch (Exception e) 
 		{
@@ -70,4 +102,29 @@ public class RecommenderAgent extends Agent {
 		}
 	}
 
+	private int calculateTagPoints(List<String> tagsConteudo, List<String> preferenciasAluno)
+	{
+		int pontos = 0;
+
+		for (String tagConteudo : tagsConteudo) {
+			if(preferenciasAluno.contains(tagConteudo))
+			{
+				pontos++;
+			}	
+		}
+
+		return pontos;
+	}
+
+	private int calculateDistancePoints(List<String> trilha, Content conteudo)
+	{
+		int pontos = 0;
+		ListIterator li = trilha.listIterator(trilha.size());
+		
+		while(li.hasPrevious())
+		{
+			String contTrilha = (String) li.previous();
+		}
+		return pontos;
+	}
 }

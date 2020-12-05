@@ -15,6 +15,8 @@ public class Content extends MidasBean{
     private List<String> tags;
     private String link;
 
+    public int pontos = 0;
+
     public Content() {
         super();
     }
@@ -91,7 +93,7 @@ public class Content extends MidasBean{
         StringBuilder builder = new StringBuilder();
 
         for (String tag : tags) {
-            builder.append(tag+",");
+            builder.append("'"+tag+"',");
         }
         
         if(!tags.isEmpty())
@@ -111,5 +113,20 @@ public class Content extends MidasBean{
     public void setLink(String link) {
         this.link = link;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+            " name:'" + getName() + "'" +
+            ", topic:'" + getTopic() + "'" +
+            ", difficulty:" + getDifficulty() + "" +
+            ", complexity:'" + getComplexity() + "'" +
+            ", exercise:" + isExercise() + "" +
+            ", taxonomy:'" + getTaxonomy() + "'" +
+            ", tags:[" + getTagsAsString() + "]" +
+            ", link:'" + getLink() + "'" +
+            "}";
+    }
+
 
 }

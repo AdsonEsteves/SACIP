@@ -74,11 +74,15 @@ public class DBConnection extends Component {
                 break;
 
             case "createContent":
-                out.add(createContent((Content)in.get("conta")));
+                out.add(createContent((Content)in.get("conteudo")));
                 break;
             
             case "findContent":
                 out.add(getContents(in));
+                break;
+            
+            case "getContentByTags":
+                out.add(getContentsByTags((List<String>) in.get("tags")));
                 break;
             
             case "editContent":
@@ -133,6 +137,7 @@ public class DBConnection extends Component {
     // }
 
     public String createUser(Student student) {
+        //TODO Mapear os dados de uso
         try 
         {
             List<Map<String, Object>> result = cypher.writequery("CREATE (u:USER {" 
@@ -142,7 +147,7 @@ public class DBConnection extends Component {
                                         + "genero: $genero," 
                                         + "nivelEdu: $nivelEdu," 
                                         + "idade: $idade,"
-                                        + "preferencias: [$preferencias]" 
+                                        + "preferencias: $preferencias" 
                                         + "})",
                         Map.of("name", student.getName(),
                                 "password", student.getPassword(),
@@ -150,7 +155,7 @@ public class DBConnection extends Component {
                                 "genero", student.getGenero(),
                                 "nivelEdu", student.getNivelEducacional(),
                                 "idade", student.getIdade(),
-                                "preferencias", student.getPreferenciasAsString()));
+                                "preferencias", student.getPreferencias()));
             return result.toString();            
         }
         catch (Exception e)
@@ -364,7 +369,7 @@ public class DBConnection extends Component {
                                         +"complexity: $complexity,"
                                         +"exercise: $exercise,"
                                         +"taxonomy: $taxonomy,"
-                                        +"tags: [$tags],"
+                                        +"tags: $tags,"
                                         +"link: $link"
                                         +"})",
                             Map.of("name", content.getName(),
@@ -373,7 +378,7 @@ public class DBConnection extends Component {
                                     "complexity", content.getComplexity(),
                                     "exercise", content.getExercise(),
                                     "taxonomy", content.getTaxonomy(),
-                                    "tags", content.getTagsAsString(),
+                                    "tags", content.getTags(),
                                     "link", content.getLink()
                             ));
             return result.toString();    
@@ -415,7 +420,46 @@ public class DBConnection extends Component {
             LOG.error("FALHOU busca de conteudo", e);
             return "FALHOU busca de conteudo "+ e.getLocalizedMessage();
         }
-    } 
+    }
+    
+    private Object getContentsByTags(List<String> tags)
+    {
+        try {
+            //Cria query necessária
+            StringBuilder query = new StringBuilder("MATCH (n:CONTENT)");
+            if(!tags.isEmpty())
+            {
+                query.append("\nWHERE ");
+                query.append("any(tags IN n.tags WHERE tags IN ");
+                query.append("[ ");
+                for (String tag : tags) {
+                    query.append("'"+tag+"',");
+                }
+                query.deleteCharAt(query.length()-1);
+                query.append("] )");          
+            }
+            query.append("\nRETURN n");
+            
+            System.out.println(query.toString());
+            //realisa a busca
+            var result = cypher.readquery(query.toString(), Map.of());
+            if(result.isEmpty())
+            {
+                return null;
+            }
+    
+            //Faz uma lista de conteudos encontrados
+            List<Content> content = new ArrayList<>();
+            for (Map<String,Object> map : result) {
+                map = (Map<String, Object>) map.get("n");
+                content.add(instanceContent(map));
+            }        
+            return content;            
+        } catch (Exception e) {
+            LOG.error("FALHOU busca de conteudo", e);
+            return "FALHOU busca de conteudo "+ e.getLocalizedMessage();
+        }
+    }
 
     private String editContent(String name, String atributeName, String newValue)
     {

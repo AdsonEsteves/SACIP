@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import org.midas.as.AgentServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
 public class Launcher {
@@ -24,7 +25,18 @@ public class Launcher {
 			iniciandoAgentesServidor(localport+"", serverport, serverAddress);
 			localport++;
 			iniciandoAgentesUsuario(localport+"", serverport, serverAddress);
-			SpringApplication.run(Launcher.class, args);
+
+			// iniciandoAgentesContainerUnico(localport+"", serverport, serverAddress);
+
+			ApplicationContext ctx = SpringApplication.run(Launcher.class, args);
+
+			// System.out.println("Let's inspect the beans provided by Spring Boot:");
+
+			// String[] beanNames = ctx.getBeanDefinitionNames();
+			// //Arrays.sort(beanNames);
+			// for (String beanName : beanNames) {
+			// 	System.out.println(beanName);
+			// }
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -54,6 +66,15 @@ public class Launcher {
 		//inicializando Agentes do Servidor.
 		String ServerAgentsStructureXML = readFile("ServerAgentsStructure.xml");
 		String ServerAgentsServicesXML = readFile("ServerAgentsServices.xml");			
+		ServerAgentsStructureXML = ServerAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
+		AgentServer.initialize(true, true, ServerAgentsStructureXML, ServerAgentsServicesXML);
+	}
+
+	public static void iniciandoAgentesContainerUnico(String localport, String serverport, String serverAddress) throws IOException
+	{
+		//inicializando Agentes do Servidor.
+		String ServerAgentsStructureXML = readFile("structure.xml");
+		String ServerAgentsServicesXML = readFile("services.xml");			
 		ServerAgentsStructureXML = ServerAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
 		AgentServer.initialize(true, true, ServerAgentsStructureXML, ServerAgentsServicesXML);
 	}

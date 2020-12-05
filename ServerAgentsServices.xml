@@ -45,7 +45,7 @@
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 	<service>
-		<name>groupStudents</name>
+		<name>getStudentGroups</name>
 		<description>Agrupa os alunos em grupos</description>
 		<entity>GrouperAgent</entity>
 		<scope>mas</scope>
@@ -129,6 +129,13 @@
 	<service>
 		<name>editContent</name>
 		<description>edita um conteudo no banco de dados</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
+		<name>getContentByTags</name>
+		<description>traz conteudos selecionados a partir de tags enviadas</description>
 		<entity>DBConnection</entity>
 		<scope>components</scope>
 		<organization>SACIP</organization>

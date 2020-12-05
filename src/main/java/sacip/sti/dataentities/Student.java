@@ -101,7 +101,7 @@ public class Student extends MidasBean{
         StringBuilder builder = new StringBuilder();
 
         for (String preferencia : preferencias) {
-            builder.append(preferencia+",");
+            builder.append("'"+preferencia+"',");
         }
         
         if(!preferencias.isEmpty())
@@ -155,7 +155,7 @@ public class Student extends MidasBean{
             ", genero:'" + genero + "'" +
             ", idade:" + idade + "" +
             ", nivelEducacional:'" + nivelEducacional + "'" +
-            ", preferencias:" + preferencias + "" +
+            ", preferencias:[" + getPreferenciasAsString() + "]" +
             ", trilha:" + trilha + "" +
             ", exerciciosResolvidos:" + exerciciosResolvidos + "" +
             ", tempoResolucao:" + tempoResolucao + "" +
