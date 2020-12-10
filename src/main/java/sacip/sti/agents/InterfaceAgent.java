@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.board.Message;
@@ -76,11 +78,15 @@ public class InterfaceAgent extends Agent implements MessageListener{
 
 	@PostMapping("/conteudos")
 	@ResponseBody
-	public String criaNovoConteudo(@RequestBody Content conteudo) {
+	public String criaNovoConteudo(@RequestBody JsonNode conteudo) {
 
 		try {
 			ServiceWrapper wrapper = AgentServer.require("SACIP", "createContent");
-			wrapper.addParameter("conteudo", conteudo);
+			String contxt= conteudo.get("conteudo").toString();
+			Content content = new ObjectMapper().readValue(contxt, Content.class);
+			wrapper.addParameter("conteudo", content);
+			wrapper.addParameter("conteudoRelacionado", conteudo.get("conteudoRelacionado").asText(null));
+			wrapper.addParameter("valorRelacao", conteudo.get("valorRelacao").asInt(0));
 			List run = wrapper.run();
 			return run.toString();
 		} catch (Exception e) {

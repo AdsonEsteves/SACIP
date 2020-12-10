@@ -74,10 +74,10 @@ public class DBConnection extends Component {
                 break;
 
             case "createContent":
-                out.add(createContent((Content)in.get("conteudo")));
+                out.add(createContent((Content)in.get("conteudo"), (String)in.get("conteudoRelacionado"), (int)in.get("valorRelacao")));
                 break;
             
-            case "findContent":
+            case "findContents":
                 out.add(getContents(in));
                 break;
             
@@ -116,6 +116,7 @@ public class DBConnection extends Component {
     {
         try {
             return new Content((String)in.get("name"),
+                                ((Long)in.get("level")).intValue(),
                                 (String)in.get("topic"),
                                 ((Long)in.get("difficulty")).intValue(),
                                 (String)in.get("complexity"),
@@ -277,13 +278,26 @@ public class DBConnection extends Component {
         try 
         {
             //Cria query necessária
-            StringBuilder query = new StringBuilder("MATCH (n:USER {");
+            StringBuilder query = new StringBuilder("MATCH (n:USER)");
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-                query.append(entry.getKey()+": $"+entry.getKey());
-                query.append(", ");
+                query.append("\nWHERE n.");
+                query.append(entry.getKey());
+                query.append(" IN [");
+                if(entry.getValue() instanceof String[])
+                {
+                    String[] attrs = (String[]) entry.getValue();
+                    for (String attr : attrs) {
+                        query.append("'"+attr+"',");
+                    }
+                    query.deleteCharAt(query.length()-1);
+                }
+                else
+                {
+                    query.append("'"+entry.getValue()+"'");
+                }
+                query.append("]");
             }
-            query.delete(query.length()-2, query.length()-1);
-            query.append("}) RETURN n");
+            query.append("\nRETURN n");
     
             //realisa a busca
             var result = cypher.readquery(query.toString(), attributes);
@@ -357,30 +371,56 @@ public class DBConnection extends Component {
         }
     }
 
-    private String createContent(Content content)
+    private String createContent(Content content, String relatedName, int relationValue)
     {
         try 
         {
-            var result = cypher.writequery("CREATE (c:CONTENT "
-                                        +"{"
-                                        +"name: $name,"
-                                        +"topic: $topic,"
-                                        +"difficulty: $difficulty,"
-                                        +"complexity: $complexity,"
-                                        +"exercise: $exercise,"
-                                        +"taxonomy: $taxonomy,"
-                                        +"tags: $tags,"
-                                        +"link: $link"
-                                        +"})",
-                            Map.of("name", content.getName(),
-                                    "topic", content.getTopic(),
-                                    "difficulty", content.getDifficulty(),
-                                    "complexity", content.getComplexity(),
-                                    "exercise", content.getExercise(),
-                                    "taxonomy", content.getTaxonomy(),
-                                    "tags", content.getTags(),
-                                    "link", content.getLink()
-                            ));
+            StringBuilder query = new StringBuilder();
+            
+            if(relatedName!=null)
+            query.append("MATCH (n:CONTENT {name: $relatedName})\n");
+
+            query.append("CREATE (c:CONTENT "
+                        +"{"
+                        +"name: $name,"
+                        +"level: $level,"
+                        +"topic: $topic,"
+                        +"difficulty: $difficulty,"
+                        +"complexity: $complexity,"
+                        +"exercise: $exercise,"
+                        +"taxonomy: $taxonomy,"
+                        +"tags: $tags,"
+                        +"link: $link"
+                        +"})");
+            
+
+            HashMap<String, Object> map = new HashMap<>();
+            map.putAll(Map.of("name", content.getName(),
+                                "level", content.getLevel(),
+                                "topic", content.getTopic(),
+                                "difficulty", content.getDifficulty(),
+                                "complexity", content.getComplexity(),
+                                "exercise", content.getExercise(),
+                                "taxonomy", content.getTaxonomy(),
+                                "tags", content.getTags(),
+                                "link", content.getLink()
+            ));
+
+            if(relatedName!=null)
+            {
+                if(relationValue>0)
+                {
+                    query.append("-[:RELATED {dPoints: $relationValue}]->(n)");
+                }
+                else
+                {
+                    query.append("<-[:RELATED {dPoints: $relationValue}]-(n)");
+                }
+                map.put("relatedName", relatedName);
+                map.put("relationValue", relationValue);
+            }
+
+            var result = cypher.writequery(query.toString(),map);
             return result.toString();    
         } 
         catch (Exception e) 
@@ -394,13 +434,26 @@ public class DBConnection extends Component {
     {
         try {
             //Cria query necessária
-            StringBuilder query = new StringBuilder("MATCH (n:CONTENT {");
+            StringBuilder query = new StringBuilder("MATCH (n:CONTENT)");
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-                query.append(entry.getKey()+": $"+entry.getKey());
-                query.append(", ");
+                query.append("\nWHERE n.");
+                query.append(entry.getKey());
+                query.append(" IN [");
+                if(entry.getValue() instanceof String[])
+                {
+                    String[] attrs = (String[]) entry.getValue();
+                    for (String attr : attrs) {
+                        query.append("'"+attr+"',");
+                    }
+                    query.deleteCharAt(query.length()-1);
+                }
+                else
+                {
+                    query.append("'"+entry.getValue()+"'");
+                }
+                query.append("]");
             }
-            query.delete(query.length()-2, query.length()-1);
-            query.append("}) RETURN n");
+            query.append("\nRETURN n");
     
             //realisa a busca
             var result = cypher.readquery(query.toString(), attributes);

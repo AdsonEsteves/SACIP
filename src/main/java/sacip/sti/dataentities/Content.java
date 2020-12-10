@@ -14,6 +14,7 @@ public class Content extends MidasBean{
     private String taxonomy;
     private List<String> tags;
     private String link;
+    private int level;
 
     public int pontos = 0;
 
@@ -21,7 +22,8 @@ public class Content extends MidasBean{
         super();
     }
 
-    public Content(String name, String topic, int difficulty, String complexity, boolean exercise, String taxonomy, List<String> tags, String link) {
+
+    public Content(String name, int level, String topic, int difficulty, String complexity, boolean exercise, String taxonomy, List<String> tags, String link) {
         this.name = name;
         this.topic = topic;
         this.difficulty = difficulty;
@@ -30,6 +32,7 @@ public class Content extends MidasBean{
         this.taxonomy = taxonomy;
         this.tags = tags;
         this.link = link;
+        this.level = level;
     }
 
     public String getName() {
@@ -114,10 +117,19 @@ public class Content extends MidasBean{
         this.link = link;
     }
 
+    public int getLevel() {
+        return this.level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
     @Override
     public String toString() {
         return "{" +
             " name:'" + getName() + "'" +
+            ", level:'" + getLevel() + "'" +
             ", topic:'" + getTopic() + "'" +
             ", difficulty:" + getDifficulty() + "" +
             ", complexity:'" + getComplexity() + "'" +

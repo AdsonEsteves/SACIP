@@ -27,7 +27,7 @@ public class RecommenderAgent extends Agent {
 		switch (service) 
 		{
 			case "getRecommendedContent":
-					out.add(getConteudosRecomendados((List<Student>)in.get("grupo"), (Student)in.get("estudante")));
+					out.add(getConteudosRecomendados((List<Student>)in.get("grupo"), (Student)in.get("estudante"), (List<Content>)in.get("trilha")));
 				break;
 		
 			default:
@@ -40,7 +40,7 @@ public class RecommenderAgent extends Agent {
 		//Board.setContextAttribute("eventState", "checkErrors");
 	}
 
-	private String getConteudosRecomendados(List<Student> grupo, Student aluno) {
+	private String getConteudosRecomendados(List<Student> grupo, Student aluno, List<Content> trilha) {
 
 		List<String> preferenciasAluno = aluno.getPreferencias();
 		try 
@@ -57,7 +57,20 @@ public class RecommenderAgent extends Agent {
 			{
 				caracteristicas.addAll(preferenciasAluno);
 			}
-				
+
+			//Verificar os tópicos e níveis que o aluno utilizou
+
+			//Fazer chamada ao banco buscando os conteúdos desses níveis
+
+			//Verificar se há algum tópico faltante em um dos níveis feitos do aluno (guardar níveis completados?)
+
+			//recomendar os tópicos de níveis mais baixos.
+
+			//pegar os conteúdos desse tópico
+
+			//filtrar pelos seguintes
+			
+
 			//Fazer chamada ao banco
 			ServiceWrapper wrapper = require("SACIP", "getContentByTags");
 			wrapper.addParameter("tags", caracteristicas);
@@ -83,8 +96,12 @@ public class RecommenderAgent extends Agent {
 			};
 			
 			for (Content content : conteudos) {
+				if(!content.getComplexity().equals(aluno.getNivelEducacional()))
+				{
+					content.pontos-=100;
+				}
 				content.pontos += calculateTagPoints(content.getTags(), preferenciasAluno);
-				content.pontos += calculateDistancePoints(aluno.getTrilha(), content);
+				content.pontos += calculateDistancePoints(trilha, content);
 				
 				sortedContent.add(content);
 			}
@@ -116,15 +133,26 @@ public class RecommenderAgent extends Agent {
 		return pontos;
 	}
 
-	private int calculateDistancePoints(List<String> trilha, Content conteudo)
+	private int calculateDistancePoints(List<Content> trilha, Content conteudo)
 	{
 		int pontos = 0;
 		ListIterator li = trilha.listIterator(trilha.size());
 		
 		while(li.hasPrevious())
 		{
-			String contTrilha = (String) li.previous();
+			Content contTrilha = (Content) li.previous();
 		}
 		return pontos;
+	}
+
+	private int dificuldadeMedia(List<Content> trilha)
+	{
+		int media = 0;
+
+		for (Content content : trilha) {
+			media+=content.getDifficulty();
+		}
+
+		return media/trilha.size();
 	}
 }

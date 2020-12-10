@@ -15,22 +15,62 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sacip.Launcher;
+import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 
 public class PedagogicalAgent extends Agent implements MessageListener{
 
-	List<String> alunosOnline = new ArrayList<>();
 	private String instancia;
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 	private Student student;
+	List<Content> trilha = new ArrayList<>();
 
 	public PedagogicalAgent() {
 		super();
 		this.instancia = Launcher.instancia;
+		montarAlunoExemplo();
+		registrarConteudosDaTrilhaDoAluno();
+	}
+
+	private void montarAlunoExemplo()
+	{
 		List<String> preferencias = new ArrayList<>();
 		preferencias.add("Animação");
 		preferencias.add("Filmes");
 		this.student = new Student("Adson", "123456", "link", "masculino", 24, "bacharelado", preferencias);
+		List<String> trilha =  new ArrayList<String>(){{
+            add("JogoDaVelha");
+            add("DesenhandoThor");
+		}};
+		this.student.setTrilha(trilha);
+	}
+
+	private void registrarConteudosDaTrilhaDoAluno()
+	{
+		try 
+		{
+			ServiceWrapper buscarConteudos = require("SACIP", "findContents");
+			buscarConteudos.addParameter("name", this.student.getTrilha().toArray());
+			List resultado = buscarConteudos.run();
+			if(resultado.get(0) instanceof List)
+			{
+				List<Content> trilhaConteudos = (List<Content>) resultado.get(0);
+				for (String nome : this.student.getTrilha()) {
+					for (Content content : trilhaConteudos) {
+						if(content.getName().equals(nome))
+						{
+							trilha.add(content);
+							continue;
+						}
+					}
+				}
+			}
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			LOG.error("Não conseguiu gerar a trilha", e);
+		}
 	}
 
 	@Override
@@ -73,6 +113,7 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 			ServiceWrapper servicoGetContent = require("SACIP", "getRecommendedContent");
 			servicoGetContent.addParameter("estudante", getAluno());
 			servicoGetContent.addParameter("grupo", grupo);
+			servicoGetContent.addParameter("trilha", this.trilha);
 			List resultado = servicoGetContent.run();
 			if(resultado.isEmpty())
 			{
@@ -95,6 +136,14 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 	private Student getAluno()
 	{
 		return this.student;
+	}
+
+	public List<Content> getTrilha() {
+		return this.trilha;
+	}
+
+	public void setTrilha(List<Content> trilha) {
+		this.trilha = trilha;
 	}
 
 }
