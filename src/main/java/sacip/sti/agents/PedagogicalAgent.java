@@ -35,12 +35,15 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 	private void montarAlunoExemplo()
 	{
 		List<String> preferencias = new ArrayList<>();
-		preferencias.add("Animação");
-		preferencias.add("Filmes");
-		this.student = new Student("Adson", "123456", "link", "masculino", 24, "bacharelado", preferencias);
+		preferencias.add("animes");
+		preferencias.add("filmes");
+		this.student = new Student("Adson", "123456", "link", "masculino", 24, "graduação", preferencias);
 		List<String> trilha =  new ArrayList<String>(){{
-            add("JogoDaVelha");
-            add("DesenhandoThor");
+            add("2dcznTNvej");
+            add("Jvp1ma0QEN");
+            add("s19ra6yQrd");
+            add("tsxlrStu9a");
+            add("UlGW3aVSZI");
 		}};
 		this.student.setTrilha(trilha);
 	}
@@ -50,7 +53,7 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 		try 
 		{
 			ServiceWrapper buscarConteudos = require("SACIP", "findContents");
-			buscarConteudos.addParameter("name", this.student.getTrilha().toArray());
+			buscarConteudos.addParameter("name", this.student.getTrilha().toArray(new String[this.student.getTrilha().size()]));
 			List resultado = buscarConteudos.run();
 			if(resultado.get(0) instanceof List)
 			{

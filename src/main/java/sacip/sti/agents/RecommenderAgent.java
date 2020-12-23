@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.midas.as.AgentServer;
@@ -23,6 +25,13 @@ import sacip.sti.dataentities.Student;
 public class RecommenderAgent extends Agent {
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
+	//String[] taxBloom = {"Lembrar", "Compreeder", "Aplicar", "Analisar", "Avaliar", "Criar"};
+	private static final int LEMBRAR = 0;
+	private static final int COMPREENDER = 1;
+	private static final int APLICAR = 2;
+	private static final int ANALISAR = 3;
+	private static final int AVALIAR = 4;
+	private static final int CRIAR = 5;
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
@@ -78,10 +87,10 @@ public class RecommenderAgent extends Agent {
 
 			//Verificar os tópicos e níveis que o aluno utilizou
 			HashMap<Integer, List<String>> nivelETopico = descobrirNiveisETopicos(trilha);
-			String[] niveisFeitos = nivelETopico.keySet().toArray(new String[nivelETopico.size()]);
+			Integer[] niveisFeitos = nivelETopico.keySet().toArray(new Integer[nivelETopico.size()]);
 			//Fazer chamada ao banco buscando os conteúdos desses níveis
 			//Fazer chamada ao banco
-			ServiceWrapper servicoPegarConteudosEmNiveis = require("SACIP", "getContents");
+			ServiceWrapper servicoPegarConteudosEmNiveis = require("SACIP", "findContents");
 			servicoPegarConteudosEmNiveis.addParameter("level", niveisFeitos);
 			List resultado = servicoPegarConteudosEmNiveis.run();
 			if(resultado.get(0)==null || resultado.get(0) instanceof String)
@@ -93,7 +102,7 @@ public class RecommenderAgent extends Agent {
 			//CONTEUDOS DO TÓPICO EM QUE ELE ESTÁ
 
 			//VER OS ULTIMOS CONTEUDOS POR TÓPICO QUE ELE FEZ: MAPA(TOPICOS, CONTEUDOS) => MAPA(TOPICOS/PROXIMATAXONOMIA)
-			Map<String, String> taxonomiasPorTopicos = descobrirProximosConteudosPorTaxonomia(trilha);
+			Map<String, Integer> taxonomiasPorTopicos = descobrirProximosConteudosPorTaxonomia(trilha);
 			List<Content> conteudosPorNovasTaxonomias = new ArrayList<>();
 			if(!taxonomiasPorTopicos.isEmpty())
 			{
@@ -104,9 +113,10 @@ public class RecommenderAgent extends Agent {
 				conteudosPorNovasTaxonomias = filtrarConteudosPorTags(conteudosPorNovasTaxonomias, caracteristicas);
 			}
 
+
+
 			//Verificar se há algum tópico faltante em um dos níveis feitos do aluno (guardar níveis completados?)
 			List<String> topicosFaltantes = descobrirTopicosFaltantes(conteudos, nivelETopico);
-
 
 			//recomendar os tópicos de níveis mais baixos.
 			//pegar os conteúdos desse tópico
@@ -114,7 +124,7 @@ public class RecommenderAgent extends Agent {
 			{
 				int proximoNivelAluno = 1;
 				for (int i = 0; i < niveisFeitos.length; i++) {
-					int nivelFeito = Integer.parseInt(niveisFeitos[i]);
+					int nivelFeito = niveisFeitos[i];
 					if(nivelFeito>proximoNivelAluno)
 					{
 						proximoNivelAluno=nivelFeito;
@@ -122,7 +132,7 @@ public class RecommenderAgent extends Agent {
 				}
 				proximoNivelAluno++;
 
-				ServiceWrapper servicoPegarConteudosDoNivel = require("SACIP", "getContents");
+				ServiceWrapper servicoPegarConteudosDoNivel = require("SACIP", "findContents");
 				servicoPegarConteudosDoNivel.addParameter("level", proximoNivelAluno);
 				resultado = servicoPegarConteudosDoNivel.run();
 				if(resultado.get(0)==null || resultado.get(0) instanceof String)
@@ -137,28 +147,29 @@ public class RecommenderAgent extends Agent {
 			}			
 			conteudos = filtrarConteudosPorTags(conteudos, caracteristicas);
 
-
+			Set<Content> conteudosFiltrados = new HashSet<>();
+			conteudosFiltrados.addAll(conteudosPorNovasTaxonomias);
+			conteudosFiltrados.addAll(conteudos);
 
 			//PRIORIZAR POR PONTOS
-			for (Content content : conteudos) {
-				// if(!content.getDifficulty().equals(aluno.getNivelEducacional()))
-				// {
-				// 	content.pontos-=100;
-				// }
-				content.pontos += calculateTagPoints(content.getTags(), preferenciasAluno);				
+			for (Content content : conteudosFiltrados) {
+				content.pontos += calculateTagPoints(content.getTags(), preferenciasAluno);
+				if(conteudosPorNovasTaxonomias.contains(content))
+				{
+					content.pontos++;
+				}				
 				sortedContent.add(content);
 			}
 
 			//retornando conteudos
 			String exercicio = sortedContent.toString();
-	
 			return exercicio;
 		} 
 		catch (Exception e) 
 		{
 			LOG.error("ERRO NO PEDAGOGICAL AGENT AO SUGERIR EXERCÍCIOS", e);
 			e.printStackTrace();
-			return e.getLocalizedMessage();
+			return e.getLocalizedMessage(); 
 		}
 	}
 
@@ -176,27 +187,17 @@ public class RecommenderAgent extends Agent {
 		return pontos;
 	}
 
-	private int dificuldadeMedia(List<Content> trilha)
-	{
-		int media = 0;
-
-		for (Content content : trilha) {
-			media+=content.getDifficulty();
-		}
-
-		return media/trilha.size();
-	}
-
 	private HashMap<Integer, List<String>> descobrirNiveisETopicos(List<Content> trilha)
 	{
 		HashMap<Integer, List<String>> nivelETopic = new HashMap();
 
 		for (Content content : trilha) {
-			int nivel = content.getLevel();
+			Integer nivel = content.getLevel();
 			String topico = content.getTopic();
 			if(nivelETopic.containsKey(nivel))
 			{
-				nivelETopic.get(nivel).add(topico);
+				if(!nivelETopic.get(nivel).contains(topico))
+					nivelETopic.get(nivel).add(topico);
 			}
 			else
 			{
@@ -231,12 +232,11 @@ public class RecommenderAgent extends Agent {
 	{
 		List<Content> conteudosRecomendados = new ArrayList<>();
 
-		for (Content content : conteudosRecomendados) {
-			if(!topicos.contains(content.getTopic()))
+		for (Content content : conteudos) {
+			if(topicos.contains(content.getTopic()))
 			{
-				continue;
-			}
-			conteudos.add(content);
+				conteudosRecomendados.add(content);
+			}			
 		}
 
 		if(conteudosRecomendados.isEmpty())
@@ -251,14 +251,14 @@ public class RecommenderAgent extends Agent {
 	{
 		List<Content> conteudosRecomendados = new ArrayList<>();
 
-		for (Content content : conteudosRecomendados) {
+		for (Content content : conteudos) {
 
-			if(!caracteristicas.stream().anyMatch(element -> content.getTags().contains(element)))
+			if(!caracteristicas.stream().anyMatch(element -> content.getTags().contains(element.toLowerCase())))
 			{
 				continue;
 			}
 
-			conteudos.add(content);
+			conteudosRecomendados.add(content);
 		}
 
 		if(conteudosRecomendados.isEmpty())
@@ -269,20 +269,19 @@ public class RecommenderAgent extends Agent {
 		return conteudosRecomendados;
 	}
 
-	private Map<String, String> descobrirProximosConteudosPorTaxonomia(List<Content> trilha)
+	private Map<String, Integer> descobrirProximosConteudosPorTaxonomia(List<Content> trilha)
 	{
-		Map<String, String> taxonomiaPorTopicos = new HashMap<>();
-		String[] taxBloom = {"Lembrar", "Compreeder", "Aplicar", "Analisar", "Avaliar", "Criar"};
+		Map<String, Integer> taxonomiaPorTopicos = new HashMap<>();
 
 		for (Content content : trilha) {			
 			String topico = content.getTopic();
-			String tax = content.getTaxonomy();
+			int tax = content.getTaxonomy();
 			if(taxonomiaPorTopicos.containsKey(topico))
 			{
-				String setTax = taxonomiaPorTopicos.get(topico);
+				int setTax = taxonomiaPorTopicos.get(topico);
 				boolean foundTax = false;
-				for (int i = 0; i < taxBloom.length-1; i++) {
-					if(taxBloom[i].equals(tax) ||taxBloom[i].equals(setTax))
+				for (int i = 0; i < CRIAR; i++) {
+					if(i==tax ||i==setTax)
 					{
 						if(!foundTax)
 						{
@@ -290,30 +289,30 @@ public class RecommenderAgent extends Agent {
 						}
 						else
 						{
-							taxonomiaPorTopicos.put(topico, taxBloom[i+1]);
+							taxonomiaPorTopicos.put(topico, i+1);
 						}
 					}					
 				}
 			}
 			else
 			{
-				if(!tax.equals("Criar"))
-				taxonomiaPorTopicos.put(topico, tax);
+				if(tax!=CRIAR)
+				taxonomiaPorTopicos.put(topico, tax+1);
 			}
 		}
 
 		return taxonomiaPorTopicos;
 	}
 
-	private List<Content> descobrirConteudosDeTaxonomia(List<Content> conteudos, Map<String, String> taxonomiasPorTopicos)
+	private List<Content> descobrirConteudosDeTaxonomia(List<Content> conteudos, Map<String, Integer> taxonomiasPorTopicos)
 	{
 		List<Content> conteudosRecomendados = new ArrayList<>();
 
-		for (Content content : conteudosRecomendados) {
+		for (Content content : conteudos) {
 			if(taxonomiasPorTopicos.containsKey(content.getTopic()))
 			{
-				String tax = taxonomiasPorTopicos.get(content.getTopic());
-				if(content.getTaxonomy().equals(tax))
+				int tax = taxonomiasPorTopicos.get(content.getTopic());
+				if(content.getTaxonomy()==tax)
 				{
 					conteudosRecomendados.add(content);
 				}

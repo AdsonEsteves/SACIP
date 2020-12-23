@@ -1,25 +1,25 @@
 package sacip.sti.components;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.lang.model.util.ElementScanner14;
+import java.util.Random;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Component;
 import org.midas.as.agent.templates.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 import sacip.sti.utils.BoltCypherExecutor;
 import sacip.sti.utils.CypherExecutor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public class DBConnection extends Component {
@@ -118,10 +118,9 @@ public class DBConnection extends Component {
             return new Content((String)in.get("name"),
                                 ((Long)in.get("level")).intValue(),
                                 (String)in.get("topic"),
-                                ((Long)in.get("difficulty")).intValue(),
                                 (String)in.get("complexity"),
                                 (boolean)in.get("exercise"),
-                                (String)in.get("taxonomy"),
+                                ((Long)in.get("taxonomy")).intValue(),
                                 (List<String>) in.get("tags"),
                                 (String)in.get("link"));    
         } catch (Exception e) {
@@ -385,7 +384,6 @@ public class DBConnection extends Component {
                         +"name: $name,"
                         +"level: $level,"
                         +"topic: $topic,"
-                        +"difficulty: $difficulty,"
                         +"complexity: $complexity,"
                         +"exercise: $exercise,"
                         +"taxonomy: $taxonomy,"
@@ -398,7 +396,6 @@ public class DBConnection extends Component {
             map.putAll(Map.of("name", content.getName(),
                                 "level", content.getLevel(),
                                 "topic", content.getTopic(),
-                                "difficulty", content.getDifficulty(),
                                 "complexity", content.getComplexity(),
                                 "exercise", content.getExercise(),
                                 "taxonomy", content.getTaxonomy(),
@@ -444,6 +441,14 @@ public class DBConnection extends Component {
                     String[] attrs = (String[]) entry.getValue();
                     for (String attr : attrs) {
                         query.append("'"+attr+"',");
+                    }
+                    query.deleteCharAt(query.length()-1);
+                }
+                else if(entry.getValue() instanceof Integer[])
+                {
+                    Integer[] attrs = (Integer[]) entry.getValue();
+                    for (Integer attr : attrs) {
+                        query.append(attr+",");
                     }
                     query.deleteCharAt(query.length()-1);
                 }
@@ -568,19 +573,173 @@ public class DBConnection extends Component {
         cypher.writequery("MATCH (n) DETACH DELETE n", Map.of());
     }
 
+    private void doQuery(String query, Map mapa)
+    {
+        cypher.writequery(query, mapa);
+    }
+
     public static void main(String[] args) {
 
         DBConnection conect = new DBConnection();
-        // String dado1 = "{'componente':'DEbug', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
-        // String dado2 = "{'componente':'DESU', 'timestamp':'1603315704', 'IP':'177.132.153.244'}";
-        // List<String> dadosL = new ArrayList<>();
-        // dadosL.add(dado1);
-        // dadosL.add(dado2);
-        // Map<String, Object> dados = Map.of("Conteudo", dadosL);
-        // System.out.println(conect.addClickInformation("Andre", dados));
-        conect.showNodes();
-        // conect.showNodeRelationships("Andre");
+        //conect.showNodes();
+        conect.resetDB();
+        conect.dummyData();
         System.exit(0);
     }
 
+    private static List<String> contentNames = new ArrayList<>();
+
+    private void dummyData()
+    {
+        String[] tags = {"carros", "musica", "animes", "desenhos", "animação", "jogos", "geografia",
+                         "matemática", "linguas", "biologia", "animais", "pets", "imagens", "memes",
+                         "mitologia", "marvel", "dc", "monstros", "youtube", "comédia", "cultura",
+                         "filmes", "super-heróis", "História", "Esportes", "Ciência", "Brinquedos",
+                         "Internacional", "Tecnologia", "Comidas", "Livros"
+                        };
+        String[][] topicos = {
+                            {"t1", "t2", "t3"},
+                            {"t4", "t5", "t6"},
+                            {"t7", "t8", "t9"},
+                            {"t10", "t11", "t12"},
+                            {"t13", "t14", "t15"}                            
+                            };
+
+        int niveis = 5;
+
+        String[] complexidade = {"Matemática", "Cognitiva", "Algoritmo", "Codigo"};
+
+        String[] generos = {"Masculino", "Feminino", "Transsexual", "Outro"};
+
+        String[] niveisEdu = {"Fundamental", "Ensino Médio", "Graduação"};
+
+        final int LIMITE = 500;
+
+        final int LIMALU = 50;
+
+        List<Map<String, Object>> mapas = new ArrayList<>();
+
+        List<Map<String, Object>> dummyStudents = new ArrayList<>();
+
+        
+
+        for (int i = 0; i < LIMITE; i++) {
+            mapas.add(mapaCriacaoConteudo(returnRandomTags(tags), topicos, niveis, complexidade));
+        }
+
+        for (int i = 0; i < LIMALU; i++) {
+            dummyStudents.add(mapaCriacaoUsuario(returnRandomTags(tags), returnRandomContents(contentNames.toArray(new String[contentNames.size()])), generos, niveisEdu));
+        }
+
+        //System.out.println(queryBuilt.toString());
+
+        doQuery("UNWIND $props AS map CREATE (n:CONTENT) SET n = map", Map.of("props", mapas.toArray()));
+
+        doQuery("UNWIND $props AS map CREATE (n:USER) SET n = map", Map.of("props", dummyStudents.toArray()));
+
+    }
+
+    private static Map<String, Object> mapaCriacaoConteudo(String[] tags, String[][] topicos, int niveis, String[] complexidades)
+    {
+        Map<String, Object> conteudo = new HashMap<>();
+
+        String name = randomString();
+        Random generator = new Random();
+        int level = generator.nextInt(5) + 1;
+        String topico = topicos[level-1][generator.nextInt(3)];
+        String complexidade = complexidades[generator.nextInt(4)];
+        int taxonomia = generator.nextInt(6);
+        boolean exercicio = generator.nextBoolean();
+
+        contentNames.add(name);
+
+        conteudo.put("name", name);
+        conteudo.put("level", level);
+        conteudo.put("topic", topico);
+        conteudo.put("complexity", complexidade);
+        conteudo.put("exercise", exercicio);
+        conteudo.put("taxonomy", taxonomia);
+        conteudo.put("tags", tags);
+        conteudo.put("link", name);
+
+        return conteudo;
+    }
+
+    private static Map<String, Object> mapaCriacaoUsuario(String[] tags, String[] conteudos, String[] generos, String[] niveisEdu)
+    {
+        Map<String, Object> conteudo = new HashMap<>();
+        Random generator = new Random();
+
+        String name = randomString();
+        String password = randomString();
+        String avatar = randomString();
+        String genero = generos[generator.nextInt(generos.length)];
+        String nivelEdu = niveisEdu[generator.nextInt(niveisEdu.length)];
+        int idade = generator.nextInt(30)+12;
+        
+
+        conteudo.put("name", name);
+        conteudo.put("password", password);
+        conteudo.put("avatar", avatar);
+        conteudo.put("genero", genero);
+        conteudo.put("nivelEdu", nivelEdu);
+        conteudo.put("idade", idade);
+        conteudo.put("preferencias", tags);
+        conteudo.put("trilha", conteudos);
+
+        return conteudo;
+    }
+
+    public static String randomString() {
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = 10;
+        Random random = new Random();
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+        .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+        .limit(targetStringLength)
+        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+        .toString();
+        
+        return generatedString;
+    }
+
+    private static String[] returnRandomTags(String[] tags)
+    {
+        List<String> selectedTags = new ArrayList<>();
+
+        int randtags = (int)(Math.random() * 5) + 1; 
+
+        for (int i = 0; i < randtags; i++) {
+            String chosenTag = tags[new Random().nextInt(tags.length)];
+            if(selectedTags.contains(chosenTag))
+            {
+                i--;
+            }
+            else{
+                selectedTags.add(chosenTag);
+            }
+        }
+        return selectedTags.toArray(new String[selectedTags.size()]);
+    }
+
+    private static String[] returnRandomContents(String[] tags)
+    {
+        List<String> selectedTags = new ArrayList<>();
+
+        int randtags = new Random().nextInt(30); 
+
+        for (int i = 0; i < randtags; i++) {
+            String chosenTag = tags[new Random().nextInt(tags.length)];
+            if(selectedTags.contains(chosenTag))
+            {
+                i--;
+            }
+            else{
+                selectedTags.add(chosenTag);
+            }
+        }
+        return selectedTags.toArray(new String[selectedTags.size()]);
+    }
 }
