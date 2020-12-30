@@ -58,6 +58,8 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    implementation 'com.github.chen0040:java-lda:1.0.4'
+    
     // Use JUnit test framework
     testImplementation 'junit:junit:4.13'
 }

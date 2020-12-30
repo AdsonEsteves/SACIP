@@ -1,35 +1,190 @@
 package sacip.sti.agents;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.github.chen0040.data.utils.TupleTwo;
+import com.github.chen0040.lda.Doc;
+import com.github.chen0040.lda.Lda;
+import com.github.chen0040.lda.LdaResult;
+import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
+import org.midas.as.manager.execution.ServiceWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sacip.sti.dataentities.Student;
 
-public class GrouperAgent extends Agent{
+public class GrouperAgent extends Agent {
+
+	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		// TODO Auto-generated method stub
-		if(service.equals("getStudentGroups"))
-		{
-			System.out.println("Buscando alunos no banco");
-			System.out.println("Classificando alunos");
-			
-			Student aluno = (Student) in.get("estudante");
-			
-			System.out.println("Selecionando cluster de aluno "+aluno.getName()+" requisitado");
-			System.out.println("retornando grupo");
+
+		try {
+			switch (service) {
+				case "getStudentGroups":
+					out.add(findStudentSimilars((Student) in.get("estudante")));
+					break;
+
+				default:
+					break;
+			}
+		} catch (Exception e) {
+
+		}
+		if (service.equals("getStudentGroups")) {
+			try {
+
+			} catch (Exception e) {
+				LOG.error("ERRO NO AGENT AGRUPADOR", e);
+			}
 		}
 	}
 
 	@Override
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
 		// TODO Auto-generated method stub
-		
+
 	}
+
+	public static void main(String[] args) {
+		System.setProperty("hadoop.home.dir", "c:\\winutil\\");
+		GrouperAgent agent = new GrouperAgent();
+		//agent.findStudentGroup(null);
+	}
+
+	public List<Student> findStudentGroup(Student alunoRequisitado)
+	{
+		//List<Student> estudantes = getUsers();
+		List<Student> grupo = new ArrayList<>();
+
+		List<String> docs = Arrays.asList("carros animes youtube História", "comédia animes História Livros", "monstros cultura comédia Tecnologia", "Livros", "mitologia animes", "Livros matemática");
+
+		Lda method = new Lda();
+		method.setTopicCount(3);
+		method.setMaxVocabularySize(20000);
+		//method.setStemmerEnabled(true);
+		//method.setRemoveNumbers(true);
+		//method.setRemoveXmlTag(true);
+		//method.addStopWords(Arrays.asList("we", "they"));
+
+		LdaResult result = method.fit(docs);
+
+		
+
+		// //System.out.println("Topic Count: "+result.topicCount());
+		// for(int topicIndex = 0; topicIndex < result.topicCount(); ++topicIndex){
+		// 	String topicSummary = result.topicSummary(topicIndex);
+		// 	List<TupleTwo<String, Integer>> topKeyWords = result.topKeyWords(topicIndex, 10);
+		// 	List<TupleTwo<Doc, Double>> topStrings = result.topDocuments(topicIndex, 5);
+
+		// 	//System.out.println("Topic #" + (topicIndex+1) + ": " + topicSummary);
+
+		// 	for(TupleTwo<String, Integer> entry : topKeyWords){
+		// 		String keyword = entry._1();
+		// 		int score = entry._2();
+		// 		//System.out.println("Keyword: " + keyword + "(" + score + ")");
+		// 	}
+
+		// 	for(TupleTwo<Doc, Double> entry : topStrings){
+		// 		double score = entry._2();
+		// 		int docIndex = entry._1().getDocIndex();
+		// 		String docContent = entry._1().getContent();
+		// 		//System.out.println("Doc (" + docIndex + ", " + score + ")): " + docContent);
+		// 	}
+		// }
+
+		for(Doc doc : result.documents()){
+			List<TupleTwo<Integer, Double>> topTopics = doc.topTopics(3);
+			System.out.println("Doc: {"+doc.getDocIndex()+"}"+"TOP TOPIC: {"+topTopics.get(0)._1()+"}");
+		}
+
+		return grupo;
+	}
+
+	private List<Student> findStudentSimilars(Student alunoRequisitado)
+	{
+		List<Student> estudantes = getUsers();
+
+		if(estudantes.size()<20)
+		{
+			return new ArrayList<>();
+		}
+
+		List<Student> sortedStudents = new ArrayList<Student>(){
+			@Override
+			public boolean add(Student e) {
+				super.add(e);
+				Collections.sort(this, new Comparator<Student>(){
+					@Override
+					public int compare(Student o1, Student o2) {
+						return o2.pontos-o1.pontos;
+					}
+				});
+				return true;
+			}
+		};
+
+		for (Student student : estudantes) 
+		{
+			List<String> preferencias = student.getPreferencias();
+			
+			if(!alunoRequisitado.getName().equals(student.getName()))
+			{
+				for (String preferencia : preferencias) 
+				{
+					if(alunoRequisitado.getPreferencias().contains(preferencia))
+					{
+						student.pontos++;
+					}
+					// else{
+					// 	student.pontos--;
+					// }	
+				}
+	
+				if(student.getNivelEducacional().equals(alunoRequisitado.getNivelEducacional()))
+				{
+					student.pontos+=5;
+				}
+				sortedStudents.add(student);
+			}
+		}
+
+		List<Student> grupoDe10 = new ArrayList<>();
+
+		for (int i = 0; i < 10; i++) {
+			grupoDe10.add(sortedStudents.get(i));
+		}
+
+		return grupoDe10;
+	}
+
+	private List<Student> getUsers()
+	{
+		try 
+		{
+			ServiceWrapper pegarEstudantes  = require("SACIP", "findStudents");
+			List result = pegarEstudantes.run();
+			if(result.get(0) instanceof String)
+			{
+				return null;
+			}
+			return (List<Student>) result.get(0);
+		} 
+		catch (Exception e) 
+		{
+			LOG.error("ERRO AO REQUISITAR USUARIOS DO SISTEMA", e);
+			return null;
+		}
+	}
+
 
 }

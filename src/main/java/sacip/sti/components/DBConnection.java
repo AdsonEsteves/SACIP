@@ -35,65 +35,71 @@ public class DBConnection extends Component {
     @Override
     public void provide(String service, Map in, List out) throws ServiceException {
 
-        switch (service) 
-        {
-            case "createStudent":
-                out.add(createUser((Student)in.get("conta")));
-                break;
-
-            case "findStudents":
-                out.add(getUsers(in));
-                break;
-            
-            case "editStudent":
-                out.add(editUser((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
-                break;
-
-            case "editStudentListAttr":
-                out.add(editUserListAttr((String)in.get("name"), (String)in.get("attrName"), (JsonNode)in.get("newValue")));
-                break;
-
-            case "getLogsDoAluno":
-                out.add(getUserLogInformation((String)in.get("name"), (String)in.get("type")));
-                break;
-            
-            case "deleteStudent":
-                out.add(deleteUser((String) in.get("name")));
-                break;
-            
-            case "storeStudentUseData":
-                out.add(addClickInformation((String)in.get("name"), (Map)in.get("data")));
-                break;
-
-            case "storeStudentContentUse":
-                out.add(addContentUseInformation((String)in.get("name"), (JsonNode)in.get("content")));
-                break;
-            
-            case "getStudentsContentUse":
-                out.add(getUserLogInformation((String)in.get("name"), (String)in.get("type")));
-                break;
-
-            case "createContent":
-                out.add(createContent((Content)in.get("conteudo"), (String)in.get("conteudoRelacionado"), (int)in.get("valorRelacao")));
-                break;
-            
-            case "findContents":
-                out.add(getContents(in));
-                break;
-            
-            case "getContentByTags":
-                out.add(getContentsByTags((List<String>) in.get("tags")));
-                break;
-            
-            case "editContent":
-                out.add(editContent((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
-                break;
-            
-            case "deleteContent":
-                out.add(deleteContent((String) in.get("name")));
-                break;
-
+        try {            
+            switch (service) 
+            {
+                case "createStudent":
+                    out.add(createUser((Student)in.get("conta")));
+                    break;
+    
+                case "findStudents":
+                    out.add(getUsers(in));
+                    break;
+                
+                case "editStudent":
+                    out.add(editUser((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
+                    break;
+    
+                case "editStudentListAttr":
+                    out.add(editUserListAttr((String)in.get("name"), (String)in.get("attrName"), (JsonNode)in.get("newValue")));
+                    break;
+    
+                case "getLogsDoAluno":
+                    out.add(getUserLogInformation((String)in.get("name"), (String)in.get("type")));
+                    break;
+                
+                case "deleteStudent":
+                    out.add(deleteUser((String) in.get("name")));
+                    break;
+                
+                case "storeStudentUseData":
+                    out.add(addClickInformation((String)in.get("name"), (Map)in.get("data")));
+                    break;
+    
+                case "storeStudentContentUse":
+                    out.add(addContentUseInformation((String)in.get("name"), (JsonNode)in.get("content")));
+                    break;
+                
+                case "getStudentsContentUse":
+                    out.add(getUserLogInformation((String)in.get("name"), (String)in.get("type")));
+                    break;
+    
+                case "createContent":
+                    out.add(createContent((Content)in.get("conteudo"), (String)in.get("conteudoRelacionado"), (int)in.get("valorRelacao")));
+                    break;
+                
+                case "findContents":
+                    out.add(getContents(in));
+                    break;
+                
+                case "getContentByTags":
+                    out.add(getContentsByTags((List<String>) in.get("tags")));
+                    break;
+                
+                case "editContent":
+                    out.add(editContent((String)in.get("name"), (String)in.get("attrName"), (String)in.get("newValue")));
+                    break;
+                
+                case "deleteContent":
+                    out.add(deleteContent((String) in.get("name")));
+                    break;
+    
+            }
+        } catch (Exception e) {
+            out.add(e.getMessage());
+            LOG.error("ERRO NOS SERVICOS DE CONEXAO DO BANCO DE DADOS", e);
         }
+
     }
 
     private Student instanceStudent(Map in)
@@ -103,9 +109,10 @@ public class DBConnection extends Component {
                                 (String)in.get("password"),
                                 (String)in.get("avatar"),
                                 (String)in.get("genero"),
-                                (Integer)in.get("idade"),
+                                ((Long)in.get("idade")).intValue(),
                                 (String)in.get("nivelEdu"),
-                                (List<String>) in.get("preferencias"));
+                                (List<String>) in.get("preferencias"),
+                                (List<String>) in.get("trilha"));
         } catch (Exception e) {            
             LOG.error("Não foi possível instanciar o estudante", e);
             return null;
@@ -278,6 +285,7 @@ public class DBConnection extends Component {
         {
             //Cria query necessária
             StringBuilder query = new StringBuilder("MATCH (n:USER)");
+            if(!attributes.isEmpty())
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
                 query.append("\nWHERE n.");
                 query.append(entry.getKey());
@@ -287,6 +295,14 @@ public class DBConnection extends Component {
                     String[] attrs = (String[]) entry.getValue();
                     for (String attr : attrs) {
                         query.append("'"+attr+"',");
+                    }
+                    query.deleteCharAt(query.length()-1);
+                }
+                else if(entry.getValue() instanceof Integer[])
+                {
+                    Integer[] attrs = (Integer[]) entry.getValue();
+                    for (Integer attr : attrs) {
+                        query.append(""+attr+",");
                     }
                     query.deleteCharAt(query.length()-1);
                 }
@@ -432,6 +448,7 @@ public class DBConnection extends Component {
         try {
             //Cria query necessária
             StringBuilder query = new StringBuilder("MATCH (n:CONTENT)");
+            if(!attributes.isEmpty())
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
                 query.append("\nWHERE n.");
                 query.append(entry.getKey());

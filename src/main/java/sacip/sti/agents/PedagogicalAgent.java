@@ -37,7 +37,7 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 		List<String> preferencias = new ArrayList<>();
 		preferencias.add("animes");
 		preferencias.add("filmes");
-		this.student = new Student("Adson", "123456", "link", "masculino", 24, "graduação", preferencias);
+		preferencias.add("jogos");
 		List<String> trilha =  new ArrayList<String>(){{
             add("2dcznTNvej");
             add("Jvp1ma0QEN");
@@ -45,7 +45,7 @@ public class PedagogicalAgent extends Agent implements MessageListener{
             add("tsxlrStu9a");
             add("UlGW3aVSZI");
 		}};
-		this.student.setTrilha(trilha);
+		this.student = new Student("Adson", "123456", "link", "masculino", 24, "Graduação", preferencias, trilha);
 	}
 
 	private void registrarConteudosDaTrilhaDoAluno()
@@ -115,7 +115,7 @@ public class PedagogicalAgent extends Agent implements MessageListener{
 			//Pedir recomendação para o recomendador
 			ServiceWrapper servicoGetContent = require("SACIP", "getRecommendedContent");
 			servicoGetContent.addParameter("estudante", getAluno());
-			servicoGetContent.addParameter("grupo", grupo);
+			servicoGetContent.addParameter("grupo", grupo.get(0));
 			servicoGetContent.addParameter("trilha", this.trilha);
 			List resultado = servicoGetContent.run();
 			if(resultado.isEmpty())

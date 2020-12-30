@@ -25,11 +25,13 @@ public class Student extends MidasBean{
     private List<String> errosDoEstudante;
     private Map<String, Long> tempoTag;
 
+    public int pontos = 0;
+
     public Student() {
         super();
     }
 
-    public Student(String name, String password, String avatar, String genero, int idade, String nivelEducacional, List<String> preferencias) {
+    public Student(String name, String password, String avatar, String genero, int idade, String nivelEducacional, List<String> preferencias, List<String> trilha) {
         this.name = name;
         this.password = password;
         this.avatar = avatar;
@@ -37,7 +39,7 @@ public class Student extends MidasBean{
         this.idade = idade;
         this.nivelEducacional = nivelEducacional;
         this.preferencias = preferencias;
-        this.trilha = new ArrayList<>();
+        this.trilha = trilha;
         this.exerciciosResolvidos = new ArrayList<>();
         this.tempoResolucao = 0;
         this.errosDoEstudante = new ArrayList<>();

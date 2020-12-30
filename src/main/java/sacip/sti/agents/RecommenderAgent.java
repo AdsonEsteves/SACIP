@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Agent;
@@ -72,19 +72,6 @@ public class RecommenderAgent extends Agent {
 
 		try 
 		{
-			List<String> caracteristicas = new ArrayList<>();
-
-			if(!grupo.isEmpty())
-			{
-				System.out.println("Verificando semelhanças entre alunos");
-	
-				caracteristicas.add("exemplo");
-			}
-			else
-			{
-				caracteristicas.addAll(preferenciasAluno);
-			}
-
 			//Verificar os tópicos e níveis que o aluno utilizou
 			HashMap<Integer, List<String>> nivelETopico = descobrirNiveisETopicos(trilha);
 			Integer[] niveisFeitos = nivelETopico.keySet().toArray(new Integer[nivelETopico.size()]);
@@ -98,6 +85,21 @@ public class RecommenderAgent extends Agent {
 				return "não há conteúdos";
 			}
 			List<Content> conteudos =  (List<Content>) resultado.get(0);
+			List<Content> conteudosDoGrupoNaoFeitos = new ArrayList<>();
+			if(!grupo.isEmpty())
+			{
+				//VERIFICAR TRILHAS E PEGAR CONTEUDOS UTILIZADOS NOS SEMELHANTES
+				List<Content> conteudosDasTrilhas = filtrarConteudosDasTrilhasDosAlunosDoGrupo(grupo, conteudos);
+
+				for (Content content : conteudosDasTrilhas) {
+					if(!aluno.getTrilha().contains(content.getName()))
+					{
+						conteudos.remove(content);
+						conteudosDoGrupoNaoFeitos.add(content);
+					}
+				}				
+			}
+
 
 			//CONTEUDOS DO TÓPICO EM QUE ELE ESTÁ
 
@@ -110,7 +112,7 @@ public class RecommenderAgent extends Agent {
 				conteudosPorNovasTaxonomias = descobrirConteudosDeTaxonomia(conteudos, taxonomiasPorTopicos);
 	
 				//FILTRAR POR TAGS
-				conteudosPorNovasTaxonomias = filtrarConteudosPorTags(conteudosPorNovasTaxonomias, caracteristicas);
+				conteudosPorNovasTaxonomias = filtrarConteudosPorTags(conteudosPorNovasTaxonomias, preferenciasAluno);
 			}
 
 
@@ -145,11 +147,12 @@ public class RecommenderAgent extends Agent {
 			{
 				conteudos = filtrarConteudosPorTopicos(conteudos, topicosFaltantes);						
 			}			
-			conteudos = filtrarConteudosPorTags(conteudos, caracteristicas);
+			conteudos = filtrarConteudosPorTags(conteudos, preferenciasAluno);
 
 			Set<Content> conteudosFiltrados = new HashSet<>();
 			conteudosFiltrados.addAll(conteudosPorNovasTaxonomias);
 			conteudosFiltrados.addAll(conteudos);
+			conteudosFiltrados.addAll(conteudosDoGrupoNaoFeitos);
 
 			//PRIORIZAR POR PONTOS
 			for (Content content : conteudosFiltrados) {
@@ -161,8 +164,14 @@ public class RecommenderAgent extends Agent {
 				sortedContent.add(content);
 			}
 
+			List<Content> top10Conteudos = new ArrayList<>();
+
+			for (int i = 0; i < 10; i++) {
+				top10Conteudos.add(sortedContent.get(i));
+			}
+
 			//retornando conteudos
-			String exercicio = sortedContent.toString();
+			String exercicio = top10Conteudos.toString();
 			return exercicio;
 		} 
 		catch (Exception e) 
@@ -324,4 +333,61 @@ public class RecommenderAgent extends Agent {
 
 		return conteudosRecomendados;
 	}
+
+	private List<Content> filtrarConteudosDasTrilhasDosAlunosDoGrupo(List<Student> grupo, List<Content> conteudos)
+	{
+		List<Content> conteudosEmTodos = new ArrayList<>();
+
+		Map<String, Integer> conteudosDoGrupo = new HashMap<>();
+
+		for (Student aluno : grupo) 
+		{
+			List<String> trilha = aluno.getTrilha();
+			for (String conteudo : trilha) {
+				if(conteudosDoGrupo.containsKey(conteudo))
+				{
+					conteudosDoGrupo.put(conteudo, conteudosDoGrupo.get(conteudo)+1);
+				}
+				else
+				{
+					conteudosDoGrupo.put(conteudo, 1);
+				}
+			}			
+		}
+
+		Map<String, Integer> conteudosOrdenados = sortByValue(conteudosDoGrupo);
+		
+		if(conteudosOrdenados.size()>10)
+		{
+			conteudosOrdenados = conteudosOrdenados.entrySet().stream()
+								.limit(10)
+								.collect(LinkedHashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), Map::putAll);
+
+		}
+
+		for (Entry<String, Integer> entry : conteudosOrdenados.entrySet())
+		{
+			for (Content content : conteudos) {
+				if(content.getName().equals(entry.getKey()))
+				{
+					content.pontos+=entry.getValue();
+					conteudosEmTodos.add(content);
+				}
+			}
+		}
+
+		return conteudosEmTodos;
+	}
+
+	public <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Entry<K, V>> list = new ArrayList<>(map.entrySet());
+        list.sort(Entry.comparingByValue());
+		Collections.reverse(list);
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
+    }
 }
