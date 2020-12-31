@@ -1,9 +1,9 @@
 package sacip.sti.agents;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,63 +51,72 @@ public class GrouperAgent extends Agent {
 
 	@Override
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
-		// TODO Auto-generated method stub
+		
+		while(this.alive)
+		{
+			try 
+			{				
+				HashMap<Integer, List<Student>> studentGroups = findStudentGroup();
+				
+			} 
+			catch (Exception e) {
+				LOG.error("ERRO NO CICLO DE VIDA DO GROUPER", e);
+			}
+			Thread.sleep(3000000);
+		}
 
 	}
 
 	public static void main(String[] args) {
-		System.setProperty("hadoop.home.dir", "c:\\winutil\\");
 		GrouperAgent agent = new GrouperAgent();
-		//agent.findStudentGroup(null);
+		agent.findStudentGroup();
 	}
 
-	public List<Student> findStudentGroup(Student alunoRequisitado)
+	public HashMap<Integer, List<Student>> findStudentGroup()
 	{
-		//List<Student> estudantes = getUsers();
-		List<Student> grupo = new ArrayList<>();
+		List<Student> estudantes = getUsers();
+		HashMap<Integer, List<Student>> studentGroups = new HashMap<>();
+		double score = 0.0;
+		int mean = 10;
+		// List<String> docs = Arrays.asList("carros animes youtube História", "comédia animes História Livros", "monstros cultura comédia Tecnologia", "Livros", "mitologia animes", "Livros matemática");
+		List<String> docs = new ArrayList<>();
 
-		List<String> docs = Arrays.asList("carros animes youtube História", "comédia animes História Livros", "monstros cultura comédia Tecnologia", "Livros", "mitologia animes", "Livros matemática");
-
-		Lda method = new Lda();
-		method.setTopicCount(3);
-		method.setMaxVocabularySize(20000);
-		//method.setStemmerEnabled(true);
-		//method.setRemoveNumbers(true);
-		//method.setRemoveXmlTag(true);
-		//method.addStopWords(Arrays.asList("we", "they"));
-
-		LdaResult result = method.fit(docs);
-
-		
-
-		// //System.out.println("Topic Count: "+result.topicCount());
-		// for(int topicIndex = 0; topicIndex < result.topicCount(); ++topicIndex){
-		// 	String topicSummary = result.topicSummary(topicIndex);
-		// 	List<TupleTwo<String, Integer>> topKeyWords = result.topKeyWords(topicIndex, 10);
-		// 	List<TupleTwo<Doc, Double>> topStrings = result.topDocuments(topicIndex, 5);
-
-		// 	//System.out.println("Topic #" + (topicIndex+1) + ": " + topicSummary);
-
-		// 	for(TupleTwo<String, Integer> entry : topKeyWords){
-		// 		String keyword = entry._1();
-		// 		int score = entry._2();
-		// 		//System.out.println("Keyword: " + keyword + "(" + score + ")");
-		// 	}
-
-		// 	for(TupleTwo<Doc, Double> entry : topStrings){
-		// 		double score = entry._2();
-		// 		int docIndex = entry._1().getDocIndex();
-		// 		String docContent = entry._1().getContent();
-		// 		//System.out.println("Doc (" + docIndex + ", " + score + ")): " + docContent);
-		// 	}
-		// }
-
-		for(Doc doc : result.documents()){
-			List<TupleTwo<Integer, Double>> topTopics = doc.topTopics(3);
-			System.out.println("Doc: {"+doc.getDocIndex()+"}"+"TOP TOPIC: {"+topTopics.get(0)._1()+"}");
+		for (Student estudante : estudantes) 
+		{
+			docs.add(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", ""));
 		}
-
-		return grupo;
+		while(score<0.5)
+		{
+			Lda method = new Lda();
+			method.setTopicCount((estudantes.size()/mean)+1);
+			method.setMaxVocabularySize(20000);
+			method.setProgressListener(null);
+	
+			LdaResult result = method.fit(docs);
+			
+			for(Doc doc : result.documents())
+			{
+				List<TupleTwo<Integer, Double>> topTopics = doc.topTopics(1);
+				int key = topTopics.get(0)._1();
+				int studentIndex = doc.getDocIndex();
+				
+				if(studentGroups.containsKey(topTopics.get(0)._1()))
+				{
+					studentGroups.get(key).add(estudantes.get(studentIndex));
+				}
+				else
+				{
+					List<Student> grupo = new ArrayList<>();
+					studentGroups.put(key, grupo);
+				}
+				score+=topTopics.get(0)._2();
+				System.out.println("Doc: {"+doc.getDocIndex()+"}"+" TOP TOPIC: {"+topTopics.get(0)._1()+"}"+" SCORE: {"+topTopics.get(0)._2()+"}");
+			}
+			score=score/docs.size();
+			mean++;
+		}
+		//System.out.println("Finalizou: "+studentGroups);
+		return studentGroups;
 	}
 
 	private List<Student> findStudentSimilars(Student alunoRequisitado)
