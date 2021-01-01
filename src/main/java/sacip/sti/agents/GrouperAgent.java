@@ -12,6 +12,7 @@ import com.github.chen0040.lda.Doc;
 import com.github.chen0040.lda.Lda;
 import com.github.chen0040.lda.LdaResult;
 import org.midas.as.AgentServer;
+import org.midas.as.agent.board.Board;
 import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
@@ -57,7 +58,7 @@ public class GrouperAgent extends Agent {
 			try 
 			{				
 				HashMap<Integer, List<Student>> studentGroups = findStudentGroup();
-				
+				Board.setContextAttribute("StudentsGroups", studentGroups);
 			} 
 			catch (Exception e) {
 				LOG.error("ERRO NO CICLO DE VIDA DO GROUPER", e);
@@ -107,6 +108,7 @@ public class GrouperAgent extends Agent {
 				else
 				{
 					List<Student> grupo = new ArrayList<>();
+					grupo.add(estudantes.get(studentIndex));
 					studentGroups.put(key, grupo);
 				}
 				score+=topTopics.get(0)._2();

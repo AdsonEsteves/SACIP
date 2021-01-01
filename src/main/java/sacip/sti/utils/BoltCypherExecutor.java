@@ -46,7 +46,6 @@ public class BoltCypherExecutor implements CypherExecutor {
     }
 
     static Object convert(Value value) {
-        System.out.println("CONVERTENDO");
         switch (value.type().name()) {
             case "PATH":
                 return value.asList(BoltCypherExecutor::convert);
