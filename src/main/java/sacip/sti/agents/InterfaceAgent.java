@@ -1,5 +1,9 @@
 package sacip.sti.agents;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,12 +12,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.midas.as.AgentServer;
+import org.midas.as.agent.board.Board;
 import org.midas.as.agent.board.Message;
 import org.midas.as.agent.board.MessageListener;
 import org.midas.as.agent.templates.Agent;
 import org.midas.as.agent.templates.LifeCycleException;
 import org.midas.as.agent.templates.ServiceException;
+import org.midas.as.catalog.Catalog;
 import org.midas.as.manager.execution.ServiceWrapper;
+import org.midas.as.manager.manager.Manager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import sacip.sti.components.DBConnection;
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 
@@ -33,6 +41,17 @@ import sacip.sti.dataentities.Student;
 public class InterfaceAgent extends Agent implements MessageListener{
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
+	public int localport;
+	public final String serverport = "7100";
+	public final String serverAddress = "127.0.0.1";
+	private static Map<String, Student> usuariosConectados;
+
+	public InterfaceAgent() {
+		super();
+		this.localport = Integer.parseInt(super.recoverMetaInformation().getContainerPort());
+		this.localport++;
+		usuariosConectados = new HashMap<>();
+	}
 
 	@Override
 	public void boardChanged(Message msg) {
@@ -66,9 +85,53 @@ public class InterfaceAgent extends Agent implements MessageListener{
 		}
 	}
 
-	@GetMapping("/contas")
-	public String fazLogin() {
-		return "";
+	@PostMapping("/login")
+	@ResponseBody
+	public String fazLogin(@RequestBody JsonNode credenciais) {
+
+		try {
+			String usuario = credenciais.get("usuario").asText();
+			String senha = credenciais.get("senha").asText();
+	
+			ServiceWrapper wrapper = AgentServer.require("SACIP", "findStudents");
+			wrapper.addParameter("name", usuario);
+			wrapper.addParameter("password", senha);
+			List run = wrapper.run();
+
+			if(run.get(0)==null)
+			{
+				return "Login incorreto";
+			}
+
+			while(usuariosConectados.containsKey(localport+""))
+			{
+				localport++;
+			}
+			int setLocal = localport;
+			List<Student> estudantes = (List<Student>) run.get(0);
+			usuariosConectados.put(setLocal+"", estudantes.get(0));
+
+			Board.setContextAttribute("conectedUsers", usuariosConectados);
+
+			iniciandoAgentesUsuario(setLocal+"");
+			do {
+				try
+				{
+					super.recoverMetaInformation().getOrganizationByName("SACIP"+setLocal).getEntityByName("PedagogicalAgent"+setLocal);					
+					break;
+				}
+				catch (Exception e) {
+					Thread.sleep(1000);
+				}				
+			} while (true);
+			
+			return setLocal+"";
+			
+		} catch (Exception e) {
+			LOG.error("ERRO NO LOGIN", e);
+			return e.getMessage();
+		}
+
 	}
 
     @PutMapping("/contas")
@@ -105,6 +168,23 @@ public class InterfaceAgent extends Agent implements MessageListener{
 	public String registraPergunta()
 	{
 		return "";
+	}
+
+	public void iniciandoAgentesUsuario(String instancia) throws IOException
+	{
+		//Inicializando Agentes do Usuário
+		String UserAgentsStructureXML = readFile("UserAgentsStructure.xml");
+		String UserAgentsServicesXML = readFile("UserAgentsServices.xml");	
+		UserAgentsStructureXML = UserAgentsStructureXML.replace("$localport", localport+"").replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
+		UserAgentsServicesXML = UserAgentsServicesXML.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
+		AgentServer.initialize(true, true, UserAgentsStructureXML, UserAgentsServicesXML);
+	}
+
+	public String readFile(String file) throws IOException
+	{
+		Path fileName = Path.of(file);         
+        String actual = Files.readString(fileName);
+		return actual;
 	}
 
 }

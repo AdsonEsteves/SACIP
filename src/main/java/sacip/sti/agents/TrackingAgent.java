@@ -32,11 +32,11 @@ import sacip.sti.dataentities.Student;
 public class TrackingAgent extends Agent implements MessageListener {
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
-	private String instancia;
+	private final String port;
 
 	public TrackingAgent() {
 		super();
-		this.instancia = Launcher.instancia;
+		this.port = super.recoverMetaInformation().getContainerPort();
 	}
 
 	@Override
@@ -44,8 +44,8 @@ public class TrackingAgent extends Agent implements MessageListener {
 
 		JsonNode dados = (JsonNode) in.get("dados");
 		String nome = dados.get("nome").asText();
-
-		switch (service) 
+		
+		switch (service.replace(this.port, "")) 
 		{
 			case "storeData":
 				if (dados.has("cliques")) {
@@ -67,9 +67,6 @@ public class TrackingAgent extends Agent implements MessageListener {
 			case "storeStudentErrors":
 				out.add(addStudentData(dados.get("conteudo"), nome, "errosDoEstudante"));
 				break;
-
-			default:
-				break;
 		}
 	}
 
@@ -79,10 +76,10 @@ public class TrackingAgent extends Agent implements MessageListener {
 		Board.addMessageListener("SACIP", this);
 
 		while (alive) {
-			LOG.info("INSTANCIA " + this.instancia + " viva");
+			LOG.info("INSTANCIA " + this.port + " viva");
 			Thread.sleep(300000);
 			try {
-				ServiceWrapper wrapper = require("SACIP", "getAluno");
+				ServiceWrapper wrapper = require("SACIP"+this.port, "getAluno"+this.port);
 				Student estudante = (Student) wrapper.run();
 				descobrirModulosMaisUtilizados(estudante);
 				descobrirTagsMaisUtilizadas(estudante);

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.midas.as.AgentServer;
+import org.midas.as.manager.manager.Manager;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -12,7 +13,7 @@ import org.springframework.context.ApplicationContext;
 @SpringBootApplication
 public class Launcher {
 
-	public static String instancia = "";
+	// public static String instancia = "";
 
 	public static void main(String[] args) {
 		
@@ -23,8 +24,8 @@ public class Launcher {
 			//String serverAddress = "35.192.97.232";
 
 			iniciandoAgentesServidor(localport+"", serverport, serverAddress);
-			localport++;
-			iniciandoAgentesUsuario(localport+"", serverport, serverAddress);
+			// localport++;
+			// iniciandoAgentesUsuario(localport+"", serverport, serverAddress);
 
 			// iniciandoAgentesContainerUnico(localport+"", serverport, serverAddress);
 
@@ -37,6 +38,7 @@ public class Launcher {
 			// for (String beanName : beanNames) {
 			// 	System.out.println(beanName);
 			// }
+			Manager.getInstance().disconnect(true);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -51,31 +53,31 @@ public class Launcher {
 		return actual;
 	}
 
-	public static void iniciandoAgentesUsuario(String localport, String serverport, String serverAddress) throws IOException
-	{
-		//Inicializando Agentes do Usuário
-		String UserAgentsStructureXML = readFile("UserAgentsStructure.xml");
-		String UserAgentsServicesXML = readFile("UserAgentsServices.xml");			
-		UserAgentsStructureXML = UserAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
-		UserAgentsServicesXML = UserAgentsServicesXML.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
-		AgentServer.initialize(true, true, UserAgentsStructureXML, UserAgentsServicesXML);
-	}
+	// public static void iniciandoAgentesUsuario(String localport, String serverport, String serverAddress) throws IOException
+	// {
+	// 	//Inicializando Agentes do Usuário
+	// 	String UserAgentsStructureXML = readFile("UserAgentsStructure.xml");
+	// 	String UserAgentsServicesXML = readFile("UserAgentsServices.xml");			
+	// 	UserAgentsStructureXML = UserAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
+	// 	UserAgentsServicesXML = UserAgentsServicesXML.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
+	// 	AgentServer.initialize(true, true, UserAgentsStructureXML, UserAgentsServicesXML);
+	// }
 
 	public static void iniciandoAgentesServidor(String localport, String serverport, String serverAddress) throws IOException
 	{
 		//inicializando Agentes do Servidor.
 		String ServerAgentsStructureXML = readFile("ServerAgentsStructure.xml");
 		String ServerAgentsServicesXML = readFile("ServerAgentsServices.xml");			
-		ServerAgentsStructureXML = ServerAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
+		ServerAgentsStructureXML = ServerAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress);
 		AgentServer.initialize(true, true, ServerAgentsStructureXML, ServerAgentsServicesXML);
 	}
 
-	public static void iniciandoAgentesContainerUnico(String localport, String serverport, String serverAddress) throws IOException
-	{
-		//inicializando Agentes do Servidor.
-		String ServerAgentsStructureXML = readFile("structure.xml");
-		String ServerAgentsServicesXML = readFile("services.xml");			
-		ServerAgentsStructureXML = ServerAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
-		AgentServer.initialize(true, true, ServerAgentsStructureXML, ServerAgentsServicesXML);
-	}
+	// public static void iniciandoAgentesContainerUnico(String localport, String serverport, String serverAddress) throws IOException
+	// {
+	// 	//inicializando Agentes do Servidor.
+	// 	String ServerAgentsStructureXML = readFile("structure.xml");
+	// 	String ServerAgentsServicesXML = readFile("services.xml");			
+	// 	ServerAgentsStructureXML = ServerAgentsStructureXML.replace("$localport", localport).replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
+	// 	AgentServer.initialize(true, true, ServerAgentsStructureXML, ServerAgentsServicesXML);
+	// }
 }

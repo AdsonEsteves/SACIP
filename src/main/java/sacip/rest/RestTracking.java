@@ -16,11 +16,11 @@ public class RestTracking {
     
     private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 
-	@PostMapping("/dadosUso")
-	public String armazenaDadosUso(@RequestBody JsonNode dados){		
+	@PostMapping("/dadosUso/{agentPort}")
+	public String armazenaDadosUso(@PathVariable String agentPort, @RequestBody JsonNode dados){		
 		try 
 		{
-			ServiceWrapper wrapper = AgentServer.require("SACIP", "storeData");
+			ServiceWrapper wrapper = AgentServer.require("SACIP"+agentPort, "storeData"+agentPort);
 			wrapper.addParameter("dados", dados);
 			List out = wrapper.run();
 			return (String) out.get(0);
@@ -32,12 +32,12 @@ public class RestTracking {
 		}
 	}
 
-	@PostMapping("/exercicioResolvido")
-	public String armazenaExercicioResolvido(@RequestBody JsonNode dados)
+	@PostMapping("/exercicioResolvido/{agentPort}")
+	public String armazenaExercicioResolvido(@PathVariable String agentPort, @RequestBody JsonNode dados)
 	{
 		try 
 		{
-			ServiceWrapper wrapper = AgentServer.require("SACIP", "storeSolvedExercise");
+			ServiceWrapper wrapper = AgentServer.require("SACIP"+agentPort, "storeSolvedExercise"+agentPort);
 			wrapper.addParameter("dados", dados);
 			List out = wrapper.run();
 			return (String) out.get(0);
@@ -49,12 +49,12 @@ public class RestTracking {
 		}
 	}
 
-	@PostMapping("/novoConteudoTrilha")
-	public String armazenaNovoConteudoTrilha(@RequestBody JsonNode dados)
+	@PostMapping("/novoConteudoTrilha/{agentPort}")
+	public String armazenaNovoConteudoTrilha(@PathVariable String agentPort, @RequestBody JsonNode dados)
 	{
 		try 
 		{
-			ServiceWrapper wrapper = AgentServer.require("SACIP", "storeContentOnPath");
+			ServiceWrapper wrapper = AgentServer.require("SACIP"+agentPort, "storeContentOnPath"+agentPort);
 			wrapper.addParameter("dados", dados);
 			List out = wrapper.run();
 			return (String) out.get(0);
@@ -66,12 +66,12 @@ public class RestTracking {
 		}
 	}
 
-	@PostMapping("/ErrosCometidos")
-	public String armazenaNovosErrosCometidos(@RequestBody JsonNode dados)
+	@PostMapping("/ErrosCometidos/{agentPort}")
+	public String armazenaNovosErrosCometidos(@PathVariable String agentPort, @RequestBody JsonNode dados)
 	{
 		try 
 		{
-			ServiceWrapper wrapper = AgentServer.require("SACIP", "storeStudentErrors");
+			ServiceWrapper wrapper = AgentServer.require("SACIP"+agentPort, "storeStudentErrors"+agentPort);
 			wrapper.addParameter("dados", dados);
 			List out = wrapper.run();
 			return (String) out.get(0);

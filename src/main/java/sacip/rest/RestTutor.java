@@ -7,6 +7,7 @@ import org.midas.as.manager.execution.ServiceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,15 +17,15 @@ public class RestTutor {
     
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 
-	@GetMapping("/requisitaConteudos")
-	public String getConteudosRecomendados(){
+	@GetMapping("/requisitaConteudos/{agentPort}")
+	public String getConteudosRecomendados(@PathVariable String agentPort){
 		try {
-			ServiceWrapper wrapper = AgentServer.require("SACIP", "suggestContent");
+			ServiceWrapper wrapper = AgentServer.require("SACIP"+agentPort, "suggestContent"+agentPort);
 			List run = wrapper.run();
 			return run.toString();
 		} catch (Exception e) {
-			LOG.error("Falhou criar conta em REST Interface", e);
-			return "Falhou criar conta: \n"+e.getLocalizedMessage();
+			LOG.error("Falhou ao sugerir conteudos", e);
+			return "Falhou ao sugerir conteudos: \n"+e.getLocalizedMessage();
 		}	
 	}
 

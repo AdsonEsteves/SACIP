@@ -78,7 +78,7 @@ public class GrouperAgent extends Agent {
 		List<Student> estudantes = getUsers();
 		HashMap<Integer, List<Student>> studentGroups = new HashMap<>();
 		double score = 0.0;
-		int mean = 10;
+		int mean = 5;
 		// List<String> docs = Arrays.asList("carros animes youtube História", "comédia animes História Livros", "monstros cultura comédia Tecnologia", "Livros", "mitologia animes", "Livros matemática");
 		List<String> docs = new ArrayList<>();
 

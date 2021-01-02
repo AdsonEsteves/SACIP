@@ -286,31 +286,35 @@ public class DBConnection extends Component {
             //Cria query necessária
             StringBuilder query = new StringBuilder("MATCH (n:USER)");
             if(!attributes.isEmpty())
-            for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-                query.append("\nWHERE n.");
-                query.append(entry.getKey());
-                query.append(" IN [");
-                if(entry.getValue() instanceof String[])
-                {
-                    String[] attrs = (String[]) entry.getValue();
-                    for (String attr : attrs) {
-                        query.append("'"+attr+"',");
+            {
+                query.append("\nWHERE");
+                for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                    query.append(" n.");
+                    query.append(entry.getKey());
+                    query.append(" IN [");
+                    if(entry.getValue() instanceof String[])
+                    {
+                        String[] attrs = (String[]) entry.getValue();
+                        for (String attr : attrs) {
+                            query.append("'"+attr+"',");
+                        }
+                        query.deleteCharAt(query.length()-1);
                     }
-                    query.deleteCharAt(query.length()-1);
-                }
-                else if(entry.getValue() instanceof Integer[])
-                {
-                    Integer[] attrs = (Integer[]) entry.getValue();
-                    for (Integer attr : attrs) {
-                        query.append(""+attr+",");
+                    else if(entry.getValue() instanceof Integer[])
+                    {
+                        Integer[] attrs = (Integer[]) entry.getValue();
+                        for (Integer attr : attrs) {
+                            query.append(""+attr+",");
+                        }
+                        query.deleteCharAt(query.length()-1);
                     }
-                    query.deleteCharAt(query.length()-1);
+                    else
+                    {
+                        query.append("'"+entry.getValue()+"'");
+                    }
+                    query.append("] AND");
                 }
-                else
-                {
-                    query.append("'"+entry.getValue()+"'");
-                }
-                query.append("]");
+                query.replace(query.length()-3, query.length(), "");
             }
             query.append("\nRETURN n");
     

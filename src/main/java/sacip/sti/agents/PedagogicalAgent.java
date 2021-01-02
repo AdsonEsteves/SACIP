@@ -24,16 +24,27 @@ import sacip.sti.dataentities.Student;
 
 public class PedagogicalAgent extends Agent implements MessageListener {
 
-	private String instancia;
+	private final String port;
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 	private Student student;
 	List<Content> trilha = new ArrayList<>();
 
 	public PedagogicalAgent() {
 		super();
-		this.instancia = Launcher.instancia;
-		montarAlunoExemplo();
+		this.port = super.recoverMetaInformation().getContainerPort();
+		registrarAluno();
+		//montarAlunoExemplo();
 		registrarConteudosDaTrilhaDoAluno();
+	}
+
+	private void registrarAluno()
+	{
+		try {
+			Map<String, Student> usuariosConectados = (Map<String, Student>) Board.getContextAttribute("conectedUsers");
+			this.student = usuariosConectados.get(this.port);			
+		} catch (Exception e) {
+			LOG.error("Problema no registro do usuario", e);
+		}
 	}
 
 	private void montarAlunoExemplo() {
@@ -78,7 +89,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		switch (service) {
+		switch (service.replace(this.port, "")) {
 			case "getAluno":
 				out.add(getAluno());
 				break;
@@ -134,7 +145,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 			studentGroup.forEach(s -> {
 				Student student = grupo.stream().filter(g -> g.getName().equals(s.getName()))
 				.findAny().orElseGet(()->null);
-				if(student==null)
+				if(student==null && !s.getName().equals(getAluno().getName()))
 				grupo.add(s);				
 			});
 
