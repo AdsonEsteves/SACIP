@@ -38,7 +38,7 @@ public class Launcher {
 			// for (String beanName : beanNames) {
 			// 	System.out.println(beanName);
 			// }
-			Manager.getInstance().disconnect(true);
+			//Manager.getInstance().disconnect(true);
 			
 		} catch (IOException e) {
 			e.printStackTrace();

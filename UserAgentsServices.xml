@@ -31,6 +31,13 @@
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>	
+	<service>
+		<name>registerStudent</name>
+		<description>faz o login do estudante no sistema</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>	
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP Tracking Agent													-->

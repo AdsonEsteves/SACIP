@@ -32,7 +32,7 @@ public class RecommenderAgent extends Agent {
 	private static final int ANALISAR = 3;
 	private static final int AVALIAR = 4;
 	private static final int CRIAR = 5;
-
+	
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
 		switch (service) 

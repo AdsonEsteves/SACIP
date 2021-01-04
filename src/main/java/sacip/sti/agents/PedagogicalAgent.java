@@ -24,24 +24,19 @@ import sacip.sti.dataentities.Student;
 
 public class PedagogicalAgent extends Agent implements MessageListener {
 
-	private final String port;
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 	private Student student;
 	List<Content> trilha = new ArrayList<>();
 
 	public PedagogicalAgent() {
 		super();
-		this.port = super.recoverMetaInformation().getContainerPort();
-		registrarAluno();
-		//montarAlunoExemplo();
-		registrarConteudosDaTrilhaDoAluno();
 	}
 
 	private void registrarAluno()
 	{
 		try {
 			Map<String, Student> usuariosConectados = (Map<String, Student>) Board.getContextAttribute("conectedUsers");
-			this.student = usuariosConectados.get(this.port);			
+			this.student = usuariosConectados.get(super.getPort());			
 		} catch (Exception e) {
 			LOG.error("Problema no registro do usuario", e);
 		}
@@ -89,7 +84,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		switch (service.replace(this.port, "")) {
+		switch (service.replace(super.getPort(), "")) {
 			case "getAluno":
 				out.add(getAluno());
 				break;
@@ -98,6 +93,12 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 				out.add(suggestContent());
 				break;
 
+			case "registerStudent":
+				registrarAluno();
+				//montarAlunoExemplo();
+				registrarConteudosDaTrilhaDoAluno();
+			break;
+
 			default:
 				throw new ServiceException("Serviço " + service + " não foi implementado no agente pedagógico.");
 		}
@@ -105,7 +106,18 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 
 	@Override
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
-
+		// while(alive)
+		// {
+		// 	try {
+		// 		if(super.getPort()!=null && this.student == null)
+		// 		{					
+					
+		// 			break;
+		// 		}
+		// 	} catch (Exception e) {
+		// 		//TODO: handle exception
+		// 	}
+		// }
 	}
 
 	@Override

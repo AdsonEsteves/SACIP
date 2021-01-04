@@ -24,6 +24,7 @@ import org.midas.as.manager.manager.Manager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import sacip.sti.components.DBConnection;
+
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 
@@ -41,15 +42,13 @@ import sacip.sti.dataentities.Student;
 public class InterfaceAgent extends Agent implements MessageListener{
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
-	public int localport;
+	public int localport = 7102;
 	public final String serverport = "7100";
 	public final String serverAddress = "127.0.0.1";
 	private static Map<String, Student> usuariosConectados;
 
 	public InterfaceAgent() {
-		super();
-		this.localport = Integer.parseInt(super.recoverMetaInformation().getContainerPort());
-		this.localport++;
+		super();			
 		usuariosConectados = new HashMap<>();
 	}
 
@@ -85,10 +84,22 @@ public class InterfaceAgent extends Agent implements MessageListener{
 		}
 	}
 
+	@PostMapping("/logout/{agentPort}")
+	@ResponseBody
+	public String deslogar(@PathVariable String agentPort) {
+
+		try {
+			Manager.getInstance().disconnect(agentPort, true);
+			return "SUCESSO";
+		} catch (Exception e) {
+			LOG.error("Falhou criar conta em REST Interface", e);
+			return "Falhou criar conta: \n"+e.getLocalizedMessage();
+		}
+	}
+
 	@PostMapping("/login")
 	@ResponseBody
 	public String fazLogin(@RequestBody JsonNode credenciais) {
-
 		try {
 			String usuario = credenciais.get("usuario").asText();
 			String senha = credenciais.get("senha").asText();
@@ -117,14 +128,17 @@ public class InterfaceAgent extends Agent implements MessageListener{
 			do {
 				try
 				{
-					super.recoverMetaInformation().getOrganizationByName("SACIP"+setLocal).getEntityByName("PedagogicalAgent"+setLocal);					
+					Catalog.getEntityByName(setLocal+"", "SACIP"+setLocal, "PedagogicalAgent"+setLocal);				
 					break;
 				}
 				catch (Exception e) {
+					LOG.error("Entidade não encontrada", e);
 					Thread.sleep(1000);
 				}				
 			} while (true);
-			
+
+			require("SACIP"+setLocal, "registerStudent"+setLocal).run();
+
 			return setLocal+"";
 			
 		} catch (Exception e) {
@@ -175,7 +189,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 		//Inicializando Agentes do Usuário
 		String UserAgentsStructureXML = readFile("UserAgentsStructure.xml");
 		String UserAgentsServicesXML = readFile("UserAgentsServices.xml");	
-		UserAgentsStructureXML = UserAgentsStructureXML.replace("$localport", localport+"").replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
+		UserAgentsStructureXML = UserAgentsStructureXML.replace("$localport", instancia+"").replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
 		UserAgentsServicesXML = UserAgentsServicesXML.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
 		AgentServer.initialize(true, true, UserAgentsStructureXML, UserAgentsServicesXML);
 	}

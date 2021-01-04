@@ -32,12 +32,7 @@ import sacip.sti.dataentities.Student;
 public class TrackingAgent extends Agent implements MessageListener {
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
-	private final String port;
-
-	public TrackingAgent() {
-		super();
-		this.port = super.recoverMetaInformation().getContainerPort();
-	}
+	private String port;
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
@@ -45,7 +40,7 @@ public class TrackingAgent extends Agent implements MessageListener {
 		JsonNode dados = (JsonNode) in.get("dados");
 		String nome = dados.get("nome").asText();
 		
-		switch (service.replace(this.port, "")) 
+		switch (service.replace(super.getPort(), "")) 
 		{
 			case "storeData":
 				if (dados.has("cliques")) {
