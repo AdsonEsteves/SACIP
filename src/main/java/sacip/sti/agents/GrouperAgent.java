@@ -91,7 +91,6 @@ public class GrouperAgent extends Agent {
 			Lda method = new Lda();
 			method.setTopicCount((estudantes.size()/mean)+1);
 			method.setMaxVocabularySize(20000);
-			method.setProgressListener(null);
 	
 			LdaResult result = method.fit(docs);
 			
@@ -112,7 +111,7 @@ public class GrouperAgent extends Agent {
 					studentGroups.put(key, grupo);
 				}
 				score+=topTopics.get(0)._2();
-				System.out.println("Doc: {"+doc.getDocIndex()+"}"+" TOP TOPIC: {"+topTopics.get(0)._1()+"}"+" SCORE: {"+topTopics.get(0)._2()+"}");
+				//System.out.println("Doc: {"+doc.getDocIndex()+"}"+" TOP TOPIC: {"+topTopics.get(0)._1()+"}"+" SCORE: {"+topTopics.get(0)._2()+"}");
 			}
 			score=score/docs.size();
 			mean++;
