@@ -2,11 +2,10 @@ package sacip.sti.dataentities;
 
 import java.util.List;
 
-import org.midas.util.MidasBean;
-
-public class Content extends MidasBean{
+public class Content{
     
     private String name;
+    private String descricao;
     private String topic;
     private String complexity;
     private boolean exercise;
@@ -14,6 +13,7 @@ public class Content extends MidasBean{
     private List<String> tags;
     private String link;
     private int level;
+    private String imageLink;
 
     public int pontos = 0;
 
@@ -22,8 +22,9 @@ public class Content extends MidasBean{
     }
 
 
-    public Content(String name, int level, String topic, String complexity, boolean exercise, int taxonomy, List<String> tags, String link) {
+    public Content(String name, String descricao, int level, String topic, String complexity, boolean exercise, int taxonomy, List<String> tags, String link, String imageLink) {
         this.name = name;
+        this.descricao = descricao;
         this.topic = topic;
         this.complexity = complexity;
         this.exercise = exercise;
@@ -31,6 +32,7 @@ public class Content extends MidasBean{
         this.tags = tags;
         this.link = link;
         this.level = level;
+        this.imageLink = imageLink;
     }
 
     public String getName() {
@@ -41,6 +43,14 @@ public class Content extends MidasBean{
         this.name = name;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+    
     public String getTopic() {
         return this.topic;
     }
@@ -81,7 +91,7 @@ public class Content extends MidasBean{
         return this.tags;
     }
 
-    public String getTagsAsString() {
+    public String buildTagsAsString() {
 
         StringBuilder builder = new StringBuilder();
 
@@ -115,19 +125,29 @@ public class Content extends MidasBean{
         this.level = level;
     }
 
+    public String getImageLink() {
+        return imageLink;
+    }
+
+    public void setImageLink(String imageLink) {
+        this.imageLink = imageLink;
+    }
+
     @Override
     public String toString() {
         return "{" +
-            " name:'" + getName() + "'" +
-            ", level:'" + getLevel() + "'" +
-            ", topic:'" + getTopic() + "'" +
-            ", complexity:'" + getComplexity() + "'" +
-            ", exercise:" + isExercise() + "" +
-            ", taxonomy:'" + getTaxonomy() + "'" +
-            ", tags:[" + getTagsAsString() + "]" +
-            ", link:'" + getLink() + "'" +
+            " name='" + getName() + "'" +
+            ", descricao='" + getDescricao() + "'" +
+            ", topic='" + getTopic() + "'" +
+            ", complexity='" + getComplexity() + "'" +
+            ", exercise='" + isExercise() + "'" +
+            ", taxonomy='" + getTaxonomy() + "'" +
+            ", tags:[" + buildTagsAsString() + "]" +
+            ", link='" + getLink() + "'" +
+            ", level='" + getLevel() + "'" +
+            ", imageLink='" + getImageLink() + "'" +
             "}";
     }
-
+    
 
 }

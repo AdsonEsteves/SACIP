@@ -123,13 +123,15 @@ public class DBConnection extends Component {
     {
         try {
             return new Content((String)in.get("name"),
+                                (String)in.get("descricao"),
                                 ((Long)in.get("level")).intValue(),
                                 (String)in.get("topic"),
                                 (String)in.get("complexity"),
                                 (boolean)in.get("exercise"),
                                 ((Long)in.get("taxonomy")).intValue(),
                                 (List<String>) in.get("tags"),
-                                (String)in.get("link"));    
+                                (String)in.get("link"),
+                                (String)in.get("imageLink"));    
         } catch (Exception e) {
             LOG.error("Não foi possível instanciar o conteúdo", e);
             return null;
@@ -665,23 +667,30 @@ public class DBConnection extends Component {
         Map<String, Object> conteudo = new HashMap<>();
 
         String name = randomString();
+        String descricao = randomString();
         Random generator = new Random();
         int level = generator.nextInt(5) + 1;
         String topico = topicos[level-1][generator.nextInt(3)];
         String complexidade = complexidades[generator.nextInt(4)];
         int taxonomia = generator.nextInt(6);
         boolean exercicio = generator.nextBoolean();
+        String[] links = {"https://cdn.discordapp.com/attachments/571157550956019741/800619655366574091/12243585_1694508097447198_1004266710788666891_n.jpg",
+                        "https://cdn.discordapp.com/attachments/571157550956019741/800619703089365002/21077295_1119616784841346_734019202998452151_n.jpg",
+                        "https://cdn.discordapp.com/attachments/571157550956019741/800619727889629264/1521285067403.jpg"};
+        String imageLink = links[generator.nextInt(3)];
 
         contentNames.add(name);
 
         conteudo.put("name", name);
-        conteudo.put("level", level);
+        conteudo.put("descricao", descricao);
         conteudo.put("topic", topico);
         conteudo.put("complexity", complexidade);
         conteudo.put("exercise", exercicio);
         conteudo.put("taxonomy", taxonomia);
         conteudo.put("tags", tags);
         conteudo.put("link", name);
+        conteudo.put("level", level);
+        conteudo.put("imageLink", imageLink);
 
         return conteudo;
     }

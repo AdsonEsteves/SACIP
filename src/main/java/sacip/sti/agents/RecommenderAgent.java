@@ -9,6 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Set;
 
 import org.midas.as.AgentServer;
@@ -51,7 +54,7 @@ public class RecommenderAgent extends Agent {
 		//Board.setContextAttribute("eventState", "checkErrors");
 	}
 
-	private String getConteudosRecomendados(List<Student> grupo, Student aluno, List<Content> trilha) {
+	private Object getConteudosRecomendados(List<Student> grupo, Student aluno, List<Content> trilha) {
 
 		List<String> preferenciasAluno = aluno.getPreferencias();
 
@@ -172,7 +175,7 @@ public class RecommenderAgent extends Agent {
 
 			//retornando conteudos
 			String exercicio = top10Conteudos.toString();
-			return exercicio;
+			return new ObjectMapper().valueToTree(top10Conteudos);
 		} 
 		catch (Exception e) 
 		{

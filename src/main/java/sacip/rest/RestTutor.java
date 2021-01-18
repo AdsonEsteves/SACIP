@@ -29,20 +29,17 @@ public class RestTutor {
 		}	
 	}
 
-    // @GetMapping("/trilha/{user}")
-	// public String getTrilhaUsuario(String name) {
-	// 	return test;
-	// }
-
-    // @GetMapping("/trilha")
-	// public String getTrilhas(String name) {
-	// 	return test;
-	// }
-
-	// @GetMapping("/dicas")
-	// public String getDicas(String name) {
-	// 	return test;
-	// }
+	@GetMapping("/requisitaTrilha/{agentPort}")
+	public String getTrilha(@PathVariable String agentPort){
+		try {
+			ServiceWrapper wrapper = AgentServer.require("SACIP"+agentPort, "getTrilha"+agentPort);
+			List run = wrapper.run();
+			return run.toString();
+		} catch (Exception e) {
+			LOG.error("Falhou ao pegar trilha", e);
+			return "Falhou ao pegar trilha: \n"+e.getLocalizedMessage();
+		}	
+	}
 
 }
 	

@@ -38,6 +38,13 @@
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>	
+	<service>
+		<name>getTrilha</name>
+		<description>retorna a trilha atual do aluno</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>	
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP Tracking Agent													-->

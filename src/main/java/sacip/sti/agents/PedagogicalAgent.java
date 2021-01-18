@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.midas.as.AgentServer;
 import org.midas.as.agent.board.Board;
 import org.midas.as.agent.board.BoardException;
@@ -87,6 +89,10 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 		switch (service.replace(super.getPort(), "")) {
 			case "getAluno":
 				out.add(getAluno());
+				break;
+
+			case "getTrilha":
+				out.add(new ObjectMapper().valueToTree(trilha));
 				break;
 
 			case "suggestContent":
@@ -184,7 +190,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 			{
 				return "vazio";
 			}
-			String recomendacoes = (String) resultado.get(0);
+			String recomendacoes = resultado.get(0).toString();
 
 			return recomendacoes;
 						
