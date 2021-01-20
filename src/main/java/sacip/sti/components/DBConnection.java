@@ -702,10 +702,13 @@ public class DBConnection extends Component {
 
         String name = randomString();
         String password = randomString();
-        String avatar = randomString();
         String genero = generos[generator.nextInt(generos.length)];
         String nivelEdu = niveisEdu[generator.nextInt(niveisEdu.length)];
         int idade = generator.nextInt(30)+12;
+        String[] links = {"https://cdn.discordapp.com/attachments/571157550956019741/800619655366574091/12243585_1694508097447198_1004266710788666891_n.jpg",
+                        "https://cdn.discordapp.com/attachments/571157550956019741/800619703089365002/21077295_1119616784841346_734019202998452151_n.jpg",
+                        "https://cdn.discordapp.com/attachments/571157550956019741/800619727889629264/1521285067403.jpg"};
+        String avatar = links[generator.nextInt(3)];
         
 
         conteudo.put("name", name);

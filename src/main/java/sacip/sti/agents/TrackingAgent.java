@@ -32,7 +32,6 @@ import sacip.sti.dataentities.Student;
 public class TrackingAgent extends Agent implements MessageListener {
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
-	private String port;
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
@@ -71,24 +70,25 @@ public class TrackingAgent extends Agent implements MessageListener {
 		Board.addMessageListener("SACIP", this);
 
 		while (alive) {
-			LOG.info("INSTANCIA " + this.port + " viva");
-			Thread.sleep(300000);
+			LOG.info("INSTANCIA " + super.getPort() + " viva");
+			
 			try {
-				ServiceWrapper wrapper = require("SACIP"+this.port, "getAluno"+this.port);
-				Student estudante = (Student) wrapper.run();
-				descobrirModulosMaisUtilizados(estudante);
-				descobrirTagsMaisUtilizadas(estudante);
-				descobrirTopicosMaisUtilizados(estudante);
-				verificarFrequenciaDoAluno(estudante);
-				descobrirTempoGastoPorTopico(estudante);
-				descobrirTempoGastoPorTag(estudante);
-				descobrirTempoGastoPorModulo(estudante);
-				descobrirTiposDeExercicioQueMelhorEPiorSaiu(estudante);
+				ServiceWrapper wrapper = require("SACIP"+super.getPort(), "getAluno"+super.getPort());
+				Student estudante = (Student) wrapper.run().get(0);
+				// descobrirModulosMaisUtilizados(estudante);
+				// descobrirTagsMaisUtilizadas(estudante);
+				// descobrirTopicosMaisUtilizados(estudante);
+				// verificarFrequenciaDoAluno(estudante);
+				// descobrirTempoGastoPorTopico(estudante);
+				// descobrirTempoGastoPorTag(estudante);
+				// descobrirTempoGastoPorModulo(estudante);
+				// descobrirTiposDeExercicioQueMelhorEPiorSaiu(estudante);
 
 			} catch (Exception e) {
 
 				LOG.error("Ocorreu um erro no ciclo de vida do Agente Rastreador", e);
 			}
+			Thread.sleep(30000);
 		}
 
 	}

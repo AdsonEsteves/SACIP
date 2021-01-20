@@ -10,6 +10,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.board.Board;
@@ -139,7 +140,11 @@ public class InterfaceAgent extends Agent implements MessageListener{
 
 			require("SACIP"+setLocal, "registerStudent"+setLocal).run();
 
-			return setLocal+"";
+			ObjectNode newNode = new ObjectMapper().createObjectNode();
+			newNode.put("porta", setLocal);
+			newNode.set("estudante", new ObjectMapper().valueToTree(estudantes.get(0)));
+
+			return newNode.toString();
 			
 		} catch (Exception e) {
 			LOG.error("ERRO NO LOGIN", e);
