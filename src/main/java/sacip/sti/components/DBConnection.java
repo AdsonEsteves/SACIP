@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Component;
@@ -93,7 +94,11 @@ public class DBConnection extends Component {
                 case "deleteContent":
                     out.add(deleteContent((String) in.get("name")));
                     break;
-    
+                
+                case "getInfo":
+                    out.add(getContentInfo());
+                    break;
+                
             }
         } catch (Exception e) {
             out.add(e.getMessage());
@@ -575,6 +580,23 @@ public class DBConnection extends Component {
         }
     }
 
+    private String getContentInfo()
+    {
+        try 
+        {
+            var result = cypher.writequery("MATCH (n:INFO)"+
+                                           "RETURN n"
+                        , Map.of());
+            
+            return new ObjectMapper().writeValueAsString(result.get(0).get("n")).toString();            
+        } 
+        catch (Exception e) 
+        {
+            LOG.error("FALHOU pegar Informacao Conteudos", e);
+            return "FALHOU pegar Informacao Conteudos" + e.getLocalizedMessage();
+        }
+    }
+
     private void showNodes()
     {
         var result = cypher.readquery("MATCH (n) RETURN n", Map.of());
@@ -627,6 +649,13 @@ public class DBConnection extends Component {
                             {"t10", "t11", "t12"},
                             {"t13", "t14", "t15"}                            
                             };
+        String[] topicos1d = {
+            "t1", "t2", "t3",
+            "t4", "t5", "t6",
+            "t7", "t8", "t9",
+            "t10", "t11", "t12",
+            "t13", "t14", "t15",                         
+            };
 
         int niveis = 5;
 
@@ -659,6 +688,12 @@ public class DBConnection extends Component {
         doQuery("UNWIND $props AS map CREATE (n:CONTENT) SET n = map", Map.of("props", mapas.toArray()));
 
         doQuery("UNWIND $props AS map CREATE (n:USER) SET n = map", Map.of("props", dummyStudents.toArray()));
+
+        doQuery("CREATE (n:INFO {"+
+                "MAXlevel: $MAXlevel,"+
+                "tags: $tags,"+
+                "topics: $topics"+
+                "})", Map.of("MAXlevel", niveis, "tags", tags, "topics", topicos1d));
 
     }
 

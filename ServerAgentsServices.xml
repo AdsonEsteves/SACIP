@@ -147,6 +147,13 @@
 		<scope>components</scope>
 		<organization>SACIP</organization>
 	</service>
+	<service>
+		<name>getInfo</name>
+		<description>retorna informacoes gerais sobre os conteudos</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
 	
 	
 </services>

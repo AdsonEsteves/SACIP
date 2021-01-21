@@ -166,20 +166,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 				if(student==null && !s.getName().equals(getAluno().getName()))
 				grupo.add(s);				
 			});
-
-			// for (Student student : studentGroup) {
-			// 	boolean has = false;
-			// 	for (Student student2 : grupo) {
-			// 		if(student.getName().equals(student2.getName()))
-			// 		{
-			// 			has = true;
-			// 			break;
-			// 		}
-			// 	}
-			// 	if(!has)
-			// 	grupo.add(student);
-			// }
-
+			
 			//Pedir recomendação para o recomendador
 			ServiceWrapper servicoGetContent = require("SACIP", "getRecommendedContent");
 			servicoGetContent.addParameter("estudante", getAluno());
