@@ -169,8 +169,14 @@ public class RecommenderAgent extends Agent {
 
 			List<Content> top10Conteudos = new ArrayList<>();
 
-			for (int i = 0; i < 10; i++) {
-				top10Conteudos.add(sortedContent.get(i));
+			if(sortedContent.size()>=10)
+			{
+				for (int i = 0; i < 10; i++) {
+					top10Conteudos.add(sortedContent.get(i));
+				}
+			}
+			else{
+				top10Conteudos.addAll(sortedContent);
 			}
 
 			//retornando conteudos

@@ -324,7 +324,7 @@ public class DBConnection extends Component {
                 query.replace(query.length()-3, query.length(), "");
             }
             query.append("\nRETURN n");
-    
+            
             //realisa a busca
             var result = cypher.readquery(query.toString(), attributes);
             if(result.isEmpty())
@@ -461,33 +461,58 @@ public class DBConnection extends Component {
             StringBuilder query = new StringBuilder("MATCH (n:CONTENT)");
             if(!attributes.isEmpty())
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-                query.append("\nWHERE n.");
-                query.append(entry.getKey());
-                query.append(" IN [");
-                if(entry.getValue() instanceof String[])
+                query.append("\nWITH*");
+                query.append("\nWHERE ");
+                if(entry.getKey().equals("tags"))
                 {
-                    String[] attrs = (String[]) entry.getValue();
-                    for (String attr : attrs) {
-                        query.append("'"+attr+"',");
+                    query.append("all(tags IN ");
+                    query.append("[ ");
+                    String[] tags = (String[]) entry.getValue();
+                    for (String tag : tags) {
+                        query.append("'"+tag+"',");
                     }
                     query.deleteCharAt(query.length()-1);
+                    query.append("] ");
+                    query.append("WHERE tags IN n.tags) ");
                 }
-                else if(entry.getValue() instanceof Integer[])
+                else if(entry.getKey().equals("~name"))
                 {
-                    Integer[] attrs = (Integer[]) entry.getValue();
-                    for (Integer attr : attrs) {
-                        query.append(attr+",");
-                    }
-                    query.deleteCharAt(query.length()-1);
+                    query.append("n.name =~ ");
+                    query.append("'(?i).*"+entry.getValue()+".*'");
                 }
                 else
                 {
-                    query.append("'"+entry.getValue()+"'");
-                }
-                query.append("]");
+                    query.append("n.");
+                    query.append(entry.getKey());
+                    query.append(" IN [");
+                    if(entry.getValue() instanceof String[])
+                    {
+                        String[] attrs = (String[]) entry.getValue();
+                        for (String attr : attrs) {
+                            query.append("'"+attr+"',");
+                        }
+                        query.deleteCharAt(query.length()-1);
+                    }
+                    else if(entry.getValue() instanceof Integer[])
+                    {
+                        Integer[] attrs = (Integer[]) entry.getValue();
+                        for (Integer attr : attrs) {
+                            query.append(attr+",");
+                        }
+                        query.deleteCharAt(query.length()-1);
+                    }
+                    else if(entry.getValue() instanceof Boolean)
+                    {
+                        query.append(entry.getValue());
+                    }
+                    else
+                    {
+                        query.append("'"+entry.getValue()+"'");
+                    }
+                    query.append("]");
+                } 
             }
             query.append("\nRETURN n");
-    
             //realisa a busca
             var result = cypher.readquery(query.toString(), attributes);
             if(result.isEmpty())
