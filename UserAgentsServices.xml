@@ -45,6 +45,13 @@
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>	
+	<service>
+		<name>atualizarTrilha</name>
+		<description>atualiza a trilha do usuario com um novo conteudo</description>
+		<entity>PedagogicalAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>	
 
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP Tracking Agent													-->

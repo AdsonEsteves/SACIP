@@ -87,5 +87,18 @@ public class RestTutor {
 		}	
 	}
 
+	@PostMapping("/atualizarTrilha/{agentPort}")
+	public String atualizarTrilha(@PathVariable String agentPort, @RequestBody JsonNode dados){
+		try {
+			ServiceWrapper wrapper = AgentServer.require("SACIP"+agentPort, "atualizarTrilha"+agentPort);
+			wrapper.addParameter("nomeConteudo", dados.get("nomeConteudo").asText(""));
+			List run = wrapper.run();
+			return run.get(0).toString();
+		} catch (Exception e) {
+			LOG.error("Falhou ao atualizar trilha", e);
+			return "Falhou ao atualizar trilha: \n"+e.getLocalizedMessage();
+		}		
+	}
+
 }
 	

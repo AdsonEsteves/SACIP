@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
+import sacip.sti.evaluation.DataHolder;
 
 public class RecommenderAgent extends Agent {
 
@@ -81,6 +82,7 @@ public class RecommenderAgent extends Agent {
 			//Fazer chamada ao banco buscando os conteúdos desses níveis
 			//Fazer chamada ao banco
 			ServiceWrapper servicoPegarConteudosEmNiveis = require("SACIP", "findContents");
+			if(!trilha.isEmpty())
 			servicoPegarConteudosEmNiveis.addParameter("level", niveisFeitos);
 			List resultado = servicoPegarConteudosEmNiveis.run();
 			if(resultado.get(0)==null || resultado.get(0) instanceof String)
@@ -88,19 +90,11 @@ public class RecommenderAgent extends Agent {
 				return "não há conteúdos";
 			}
 			List<Content> conteudos =  (List<Content>) resultado.get(0);
-			List<Content> conteudosDoGrupoNaoFeitos = new ArrayList<>();
+			List<Content> conteudosDasTrilhas = new ArrayList<>();
 			if(!grupo.isEmpty())
 			{
 				//VERIFICAR TRILHAS E PEGAR CONTEUDOS UTILIZADOS NOS SEMELHANTES
-				List<Content> conteudosDasTrilhas = filtrarConteudosDasTrilhasDosAlunosDoGrupo(grupo, conteudos);
-
-				for (Content content : conteudosDasTrilhas) {
-					if(!aluno.getTrilha().contains(content.getName()))
-					{
-						conteudos.remove(content);
-						conteudosDoGrupoNaoFeitos.add(content);
-					}
-				}				
+				conteudosDasTrilhas = filtrarConteudosDasTrilhasDosAlunosDoGrupo(grupo, conteudos);	
 			}
 
 
@@ -125,9 +119,9 @@ public class RecommenderAgent extends Agent {
 
 			//recomendar os tópicos de níveis mais baixos.
 			//pegar os conteúdos desse tópico
+			int proximoNivelAluno = 0;
 			if(topicosFaltantes.isEmpty())
-			{
-				int proximoNivelAluno = 1;
+			{				
 				for (int i = 0; i < niveisFeitos.length; i++) {
 					int nivelFeito = niveisFeitos[i];
 					if(nivelFeito>proximoNivelAluno)
@@ -153,18 +147,26 @@ public class RecommenderAgent extends Agent {
 			conteudos = filtrarConteudosPorTags(conteudos, preferenciasAluno);
 
 			Set<Content> conteudosFiltrados = new HashSet<>();
-			conteudosFiltrados.addAll(conteudosPorNovasTaxonomias);
+			//conteudosFiltrados.addAll(conteudosPorNovasTaxonomias);
 			conteudosFiltrados.addAll(conteudos);
-			conteudosFiltrados.addAll(conteudosDoGrupoNaoFeitos);
+			//conteudosFiltrados.addAll(conteudosDasTrilhas);
 
 			//PRIORIZAR POR PONTOS
 			for (Content content : conteudosFiltrados) {
 				content.pontos += calculateTagPoints(content.getTags(), preferenciasAluno);
-				if(conteudosPorNovasTaxonomias.contains(content))
+				
+				if(!aluno.getTrilha().contains(content.getName()))
 				{
-					content.pontos++;
-				}				
-				sortedContent.add(content);
+					// if(conteudosPorNovasTaxonomias.contains(content))
+					// {
+					// 	content.pontos+=10;
+					// }
+					if(topicosFaltantes.contains(content.getTopic()))
+					{
+						content.pontos+=5;
+					}
+					sortedContent.add(content);
+				}
 			}
 
 			List<Content> top10Conteudos = new ArrayList<>();
@@ -178,6 +180,22 @@ public class RecommenderAgent extends Agent {
 			else{
 				top10Conteudos.addAll(sortedContent);
 			}
+			int nivelMaximo = niveisFeitos.length;			
+			String topicoMaximo = "0";
+			if(!nivelETopico.isEmpty())
+			{
+				List<String> list = nivelETopico.get(nivelMaximo);
+				if(list!=null && !list.isEmpty())
+				topicoMaximo = list.get(list.size()-1);
+			}
+			
+
+			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "grupo", grupo);
+			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "estudante", aluno);
+			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "recomendacoes", conteudosDasTrilhas);
+			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "topicosFaltantes", topicosFaltantes);
+			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "proximoNivel", proximoNivelAluno);
+			DataHolder.getInstance().imprimirDados();
 
 			//retornando conteudos
 			String exercicio = top10Conteudos.toString();
@@ -232,6 +250,7 @@ public class RecommenderAgent extends Agent {
 		HashMap<Integer, List<String>> niveisETopicosBuscados = descobrirNiveisETopicos(conteudosBuscados);
 		List<String> topicosFaltantes = new ArrayList<>();
 
+		if(!niveisTopicosDoAluno.isEmpty())
 		for (Entry<Integer, List<String>> entry : niveisETopicosBuscados.entrySet()) {
 			Integer key = entry.getKey();
 			List<String> listaTopicos = entry.getValue();
@@ -290,6 +309,10 @@ public class RecommenderAgent extends Agent {
 	private Map<String, Integer> descobrirProximosConteudosPorTaxonomia(List<Content> trilha)
 	{
 		Map<String, Integer> taxonomiaPorTopicos = new HashMap<>();
+		if(trilha.isEmpty())
+		{
+			taxonomiaPorTopicos.put("t1", LEMBRAR);
+		}
 
 		for (Content content : trilha) {			
 			String topico = content.getTopic();
@@ -366,13 +389,13 @@ public class RecommenderAgent extends Agent {
 
 		Map<String, Integer> conteudosOrdenados = sortByValue(conteudosDoGrupo);
 		
-		if(conteudosOrdenados.size()>10)
-		{
-			conteudosOrdenados = conteudosOrdenados.entrySet().stream()
-								.limit(10)
-								.collect(LinkedHashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), Map::putAll);
+		// if(conteudosOrdenados.size()>10)
+		// {
+		// 	conteudosOrdenados = conteudosOrdenados.entrySet().stream()
+		// 						.limit(10)
+		// 						.collect(LinkedHashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), Map::putAll);
 
-		}
+		// }
 
 		for (Entry<String, Integer> entry : conteudosOrdenados.entrySet())
 		{

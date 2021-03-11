@@ -3,6 +3,7 @@ package sacip.sti.components;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Random;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import org.midas.as.AgentServer;
 import org.midas.as.agent.templates.Component;
@@ -368,11 +370,21 @@ public class DBConnection extends Component {
     {
         try 
         {
-            var result = cypher.writequery("MATCH (n:USER { name: $name })"+
-                                            "\nSET n."+atributeName+" = coalesce(n."+atributeName+", []) + $newValue"+
-                                            "\nRETURN n.name, n."+atributeName
-                        , Map.of("name", name, "atribute", atributeName, "newValue", newValue.toString()));
-            return result.toString();            
+            if(newValue instanceof TextNode)
+            {
+                var result = cypher.writequery("MATCH (n:USER { name: $name })"+
+                                                "\nSET n."+atributeName+" = coalesce(n."+atributeName+", []) + $newValue"+
+                                                "\nRETURN n.name, n."+atributeName
+                            , Map.of("name", name, "atribute", atributeName, "newValue", newValue.asText()));
+                return result.toString();
+            }
+            else{
+                var result = cypher.writequery("MATCH (n:USER { name: $name })"+
+                                                "\nSET n."+atributeName+" = coalesce(n."+atributeName+", []) + $newValue"+
+                                                "\nRETURN n.name, n."+atributeName
+                            , Map.of("name", name, "atribute", atributeName, "newValue", newValue.toString()));
+                return result.toString();
+            }
         } 
         catch (Exception e) 
         {
@@ -488,9 +500,11 @@ public class DBConnection extends Component {
                     if(entry.getValue() instanceof String[])
                     {
                         String[] attrs = (String[]) entry.getValue();
+                        if(attrs.length!=0)
                         for (String attr : attrs) {
                             query.append("'"+attr+"',");
                         }
+                        if(attrs.length!=0)
                         query.deleteCharAt(query.length()-1);
                     }
                     else if(entry.getValue() instanceof Integer[])
@@ -499,9 +513,10 @@ public class DBConnection extends Component {
                         for (Integer attr : attrs) {
                             query.append(attr+",");
                         }
+                        if(attrs.length!=0)
                         query.deleteCharAt(query.length()-1);
                     }
-                    else if(entry.getValue() instanceof Boolean)
+                    else if(entry.getValue() instanceof Boolean || entry.getValue() instanceof Integer)
                     {
                         query.append(entry.getValue());
                     }
@@ -517,7 +532,7 @@ public class DBConnection extends Component {
             var result = cypher.readquery(query.toString(), attributes);
             if(result.isEmpty())
             {
-                return null;
+                return new ArrayList<Content>();
             }
     
             //Faz uma lista de conteudos encontrados
@@ -657,16 +672,18 @@ public class DBConnection extends Component {
         System.exit(0);
     }
 
-    private static List<String> contentNames = new ArrayList<>();
+    private static List<Content> contentNames = new ArrayList<>();
 
     private void dummyData()
     {
-        String[] tags = {"carros", "musica", "animes", "desenhos", "animação", "jogos", "geografia",
-                         "matemática", "linguas", "biologia", "animais", "pets", "imagens", "memes",
-                         "mitologia", "marvel", "dc", "monstros", "youtube", "comédia", "cultura",
-                         "filmes", "super-heróis", "História", "Esportes", "Ciência", "Brinquedos",
-                         "Internacional", "Tecnologia", "Comidas", "Livros"
-                        };
+        String[] tags = {
+                        "carros", "musica", "animes", "desenhos", "animacao", "jogos", "geografia",
+                        "matematica", "linguas", "biologia", "animais", "pets", "imagens", "memes",
+                        "mitologia", "marvel", "dc", "monstros", "youtube", "comedia", "cultura",
+                        "filmes", "superherois", "historia", "esportes", "ciencia", "brinquedos",
+                        "internacional", "tecnologia", "comidas", "livros"
+                        }
+                         ;
         String[][] topicos = {
                             {"t1", "t2", "t3"},
                             {"t4", "t5", "t6"},
@@ -688,11 +705,11 @@ public class DBConnection extends Component {
 
         String[] generos = {"Masculino", "Feminino", "Transsexual", "Outro"};
 
-        String[] niveisEdu = {"Fundamental", "Ensino Médio", "Graduação"};
+        String[] niveisEdu = {"Fundamental", "EnsinoMedio", "Graduacao"};
 
         final int LIMITE = 500;
 
-        final int LIMALU = 50;
+        final int LIMALU = 250;
 
         List<Map<String, Object>> mapas = new ArrayList<>();
 
@@ -705,7 +722,7 @@ public class DBConnection extends Component {
         }
 
         for (int i = 0; i < LIMALU; i++) {
-            dummyStudents.add(mapaCriacaoUsuario(returnRandomTags(tags), returnRandomContents(contentNames.toArray(new String[contentNames.size()])), generos, niveisEdu));
+            dummyStudents.add(mapaCriacaoUsuario(returnRandomTags(tags), generos, niveisEdu));
         }
 
         //System.out.println(queryBuilt.toString());
@@ -734,12 +751,12 @@ public class DBConnection extends Component {
         String complexidade = complexidades[generator.nextInt(4)];
         int taxonomia = generator.nextInt(6);
         boolean exercicio = generator.nextBoolean();
-        String[] links = {"https://cdn.discordapp.com/attachments/571157550956019741/800619655366574091/12243585_1694508097447198_1004266710788666891_n.jpg",
-                        "https://cdn.discordapp.com/attachments/571157550956019741/800619703089365002/21077295_1119616784841346_734019202998452151_n.jpg",
-                        "https://cdn.discordapp.com/attachments/571157550956019741/800619727889629264/1521285067403.jpg"};
+        String[] links = {"https://cdn.discordapp.com/attachments/571157550956019741/808827449109512282/8340.jpg",
+                        "https://cdn.discordapp.com/attachments/571157550956019741/808827457775599616/d00428efa0bf27b9edd37eac32dfd2c1.png",
+                        "https://cdn.discordapp.com/attachments/571157550956019741/808827462914015242/blog-10.png"};
         String imageLink = links[generator.nextInt(3)];
 
-        contentNames.add(name);
+        contentNames.add(new Content(name, descricao, level, topico, complexidade, exercicio, taxonomia, Arrays.asList(tags), name, imageLink));
 
         conteudo.put("name", name);
         conteudo.put("descricao", descricao);
@@ -755,7 +772,7 @@ public class DBConnection extends Component {
         return conteudo;
     }
 
-    private static Map<String, Object> mapaCriacaoUsuario(String[] tags, String[] conteudos, String[] generos, String[] niveisEdu)
+    private static Map<String, Object> mapaCriacaoUsuario(String[] tags, String[] generos, String[] niveisEdu)
     {
         Map<String, Object> conteudo = new HashMap<>();
         Random generator = new Random();
@@ -778,7 +795,7 @@ public class DBConnection extends Component {
         conteudo.put("nivelEdu", nivelEdu);
         conteudo.put("idade", idade);
         conteudo.put("preferencias", tags);
-        conteudo.put("trilha", conteudos);
+        conteudo.put("trilha", returnRandomContents(contentNames.toArray(new Content[contentNames.size()]), Arrays.asList(tags)));
 
         return conteudo;
     }
@@ -817,22 +834,31 @@ public class DBConnection extends Component {
         return selectedTags.toArray(new String[selectedTags.size()]);
     }
 
-    private static String[] returnRandomContents(String[] tags)
+    private static String[] returnRandomContents(Content[] contents, List<String> usertags)
     {
-        List<String> selectedTags = new ArrayList<>();
+        List<String> selectedContent = new ArrayList<>();
+        List<Content> filteredContent = new ArrayList<>();
+        List<String> topicsDone = new ArrayList<>();
+
+        for (Content content : contents) {
+            if(!Collections.disjoint(usertags, content.getTags()))
+            filteredContent.add(content);
+        }
 
         int randtags = new Random().nextInt(30); 
 
         for (int i = 0; i < randtags; i++) {
-            String chosenTag = tags[new Random().nextInt(tags.length)];
-            if(selectedTags.contains(chosenTag))
+            Content chosenContent = filteredContent.get(new Random().nextInt(filteredContent.size()));
+            if(selectedContent.contains(chosenContent.getName()))
             {
-                i--;
+                i--;                
             }
-            else{
-                selectedTags.add(chosenTag);
+            else {
+                if(!topicsDone.contains(chosenContent.getTopic()))
+                selectedContent.add(chosenContent.getName());
+                topicsDone.add(chosenContent.getTopic());
             }
         }
-        return selectedTags.toArray(new String[selectedTags.size()]);
+        return selectedContent.toArray(new String[selectedContent.size()]);
     }
 }

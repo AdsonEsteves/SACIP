@@ -41,13 +41,6 @@ public class GrouperAgent extends Agent {
 		} catch (Exception e) {
 
 		}
-		if (service.equals("getStudentGroups")) {
-			try {
-
-			} catch (Exception e) {
-				LOG.error("ERRO NO AGENT AGRUPADOR", e);
-			}
-		}
 	}
 
 	@Override
@@ -57,7 +50,7 @@ public class GrouperAgent extends Agent {
 		{
 			try 
 			{				
-				HashMap<Integer, List<Student>> studentGroups = findStudentGroup();
+				HashMap<String, List<Student>> studentGroups = findStudentGroup();
 				Board.setContextAttribute("StudentsGroups", studentGroups);
 			} 
 			catch (Exception e) {
@@ -73,34 +66,38 @@ public class GrouperAgent extends Agent {
 		agent.findStudentGroup();
 	}
 
-	public HashMap<Integer, List<Student>> findStudentGroup()
+	public HashMap<String, List<Student>> findStudentGroup()
 	{
 		List<Student> estudantes = getUsers();
-		HashMap<Integer, List<Student>> studentGroups = new HashMap<>();
+		HashMap<String, List<Student>> studentGroups = new HashMap<>();
 		double score = 0.0;
-		int mean = 5;
+		int mean = 10;
 		// List<String> docs = Arrays.asList("carros animes youtube História", "comédia animes História Livros", "monstros cultura comédia Tecnologia", "Livros", "mitologia animes", "Livros matemática");
 		List<String> docs = new ArrayList<>();
 
 		for (Student estudante : estudantes) 
 		{
-			docs.add(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", ""));
+			docs.add(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", "")+" "+estudante.getNivelEducacional()+" "+estudante.getGenero()+" "+grupoIdade(estudante.getIdade()));
+			//System.out.println(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", "")+" "+estudante.getNivelEducacional());
+			//docs.add(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", ""));
 		}
-		while(score<0.5)
+		//while(score<0.5)
 		{
+			studentGroups.clear();
 			Lda method = new Lda();
 			method.setTopicCount((estudantes.size()/mean)+1);
 			method.setMaxVocabularySize(20000);
+			method.setRemoveNumber(false);
 	
 			LdaResult result = method.fit(docs);
 			
 			for(Doc doc : result.documents())
 			{
 				List<TupleTwo<Integer, Double>> topTopics = doc.topTopics(1);
-				int key = topTopics.get(0)._1();
+				String key = result.topicSummary(topTopics.get(0)._1());
 				int studentIndex = doc.getDocIndex();
 				
-				if(studentGroups.containsKey(topTopics.get(0)._1()))
+				if(studentGroups.containsKey(key))
 				{
 					studentGroups.get(key).add(estudantes.get(studentIndex));
 				}
@@ -111,13 +108,35 @@ public class GrouperAgent extends Agent {
 					studentGroups.put(key, grupo);
 				}
 				score+=topTopics.get(0)._2();
-				//System.out.println("Doc: {"+doc.getDocIndex()+"}"+" TOP TOPIC: {"+topTopics.get(0)._1()+"}"+" SCORE: {"+topTopics.get(0)._2()+"}");
+				//System.out.println("Doc: {"+doc.getDocIndex()+"}"+" TOP TOPIC: {"+result.topicSummary(topTopics.get(0)._1())+"}"+" SCORE: {"+topTopics.get(0)._2()+"}");
 			}
 			score=score/docs.size();
 			mean++;
 		}
-		//System.out.println("Finalizou: "+studentGroups);
+		System.out.println("Finalizou: "+score+ " Media:"+mean + " Grupos: " +studentGroups.size());
+
 		return studentGroups;
+	}
+
+	private String grupoIdade(int idade)
+	{
+		if(idade<13)
+		{
+			return "menor13";
+		}
+		else if(idade<18)
+		{
+			return "13menor18";
+		}
+		else if(idade < 24)
+		{
+			return "18menor24";
+		}
+		else if(idade < 30)
+		{
+			return "24menor30";
+		}
+		return "maior30";
 	}
 
 	private List<Student> findStudentSimilars(Student alunoRequisitado)
