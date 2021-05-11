@@ -34,12 +34,16 @@ public class GrouperAgent extends Agent {
 				case "getStudentGroups":
 					out.add(findStudentSimilars((Student) in.get("estudante")));
 					break;
-
+				case "resetStudentGroups":					
+					reset_groups();
+					break;
 				default:
 					break;
 			}
 		} catch (Exception e) {
-
+			LOG.error("ERRO NO GROUPER AGENT AO AGRUPAR", e);
+			e.printStackTrace();
+			out.add(e.getLocalizedMessage());
 		}
 	}
 
@@ -59,6 +63,12 @@ public class GrouperAgent extends Agent {
 			Thread.sleep(3000000);
 		}
 
+	}
+
+	public void reset_groups() {
+		Board.setContextAttribute("StudentsGroups", "");
+		HashMap<String, List<Student>> studentGroups = findStudentGroup();
+		Board.setContextAttribute("StudentsGroups", studentGroups);
 	}
 
 	public static void main(String[] args) {

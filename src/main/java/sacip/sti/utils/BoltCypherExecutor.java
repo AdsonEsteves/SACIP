@@ -15,6 +15,11 @@ public class BoltCypherExecutor implements CypherExecutor {
         this(url, null, null, null);
     }
 
+    @Override
+    public void close_connection() {
+        driver.close();
+    }
+
     public BoltCypherExecutor(String url, String username, String password, String database) {
         boolean hasPassword = password != null && !password.isEmpty();
         AuthToken token = hasPassword ? AuthTokens.basic(username, password) : AuthTokens.none();

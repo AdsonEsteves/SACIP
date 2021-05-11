@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
+import sacip.sti.evaluation.DataHolder;
 
 @RestController
 @RequestMapping("/interface")
@@ -78,6 +79,10 @@ public class InterfaceAgent extends Agent implements MessageListener{
 			ServiceWrapper wrapper = AgentServer.require("SACIP", "createStudent");
 			wrapper.addParameter("conta", conta);
 			List run = wrapper.run();
+
+			ServiceWrapper wrapper2 = AgentServer.require("SACIP", "resetStudentGroups");
+			List run2 = wrapper2.run();
+
 			return run.toString();
 		} catch (Exception e) {
 			LOG.error("Falhou criar conta em REST Interface", e);
@@ -102,6 +107,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 	@ResponseBody
 	public String fazLogin(@RequestBody JsonNode credenciais) {
 		try {
+			DataHolder.getInstance().resetar_dados();
 			String usuario = credenciais.get("usuario").asText();
 			String senha = credenciais.get("senha").asText();
 	
@@ -187,6 +193,19 @@ public class InterfaceAgent extends Agent implements MessageListener{
 	public String registraPergunta()
 	{
 		return "";
+	}
+
+	@GetMapping("/imprimirDados")
+	public String imprimirDados()
+	{
+		try {
+			DataHolder.getInstance().imprimirDadosManipulados();			
+		} catch (Exception e) {
+			LOG.error("erro imprimir", e);
+			e.printStackTrace();
+			return e.getLocalizedMessage();
+		}
+		return "imprimiu";
 	}
 
 	public void iniciandoAgentesUsuario(String instancia) throws IOException

@@ -35,6 +35,11 @@ public class DBConnection extends Component {
         cypher = new BoltCypherExecutor("bolt://localhost:7687", "neo4j", "123456", null);
     }
 
+    public void close_conection()
+    {
+        cypher.close_connection();
+    }
+
     @Override
     public void provide(String service, Map in, List out) throws ServiceException {
 
@@ -102,9 +107,13 @@ public class DBConnection extends Component {
                     break;
                 
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             out.add(e.getMessage());
             LOG.error("ERRO NOS SERVICOS DE CONEXAO DO BANCO DE DADOS", e);
+        }
+        finally{
+            cypher.close_connection();
         }
 
     }

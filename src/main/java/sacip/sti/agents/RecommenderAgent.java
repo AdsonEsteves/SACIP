@@ -1,6 +1,7 @@
 package sacip.sti.agents;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -76,20 +77,60 @@ public class RecommenderAgent extends Agent {
 
 		try 
 		{
+			List<Content> conteudos = new ArrayList<>();
 			//Verificar os tópicos e níveis que o aluno utilizou
 			HashMap<Integer, List<String>> nivelETopico = descobrirNiveisETopicos(trilha);
 			Integer[] niveisFeitos = nivelETopico.keySet().toArray(new Integer[nivelETopico.size()]);
 			//Fazer chamada ao banco buscando os conteúdos desses níveis
 			//Fazer chamada ao banco
 			ServiceWrapper servicoPegarConteudosEmNiveis = require("SACIP", "findContents");
+
 			if(!trilha.isEmpty())
-			servicoPegarConteudosEmNiveis.addParameter("level", niveisFeitos);
-			List resultado = servicoPegarConteudosEmNiveis.run();
-			if(resultado.get(0)==null || resultado.get(0) instanceof String)
 			{
-				return "não há conteúdos";
+				servicoPegarConteudosEmNiveis.addParameter("level", niveisFeitos);
+				List resultado = servicoPegarConteudosEmNiveis.run();
+				if(resultado.get(0)==null || resultado.get(0) instanceof String)
+				{
+					return "não há conteúdos";
+				}
+				conteudos =  (List<Content>) resultado.get(0);
 			}
-			List<Content> conteudos =  (List<Content>) resultado.get(0);
+
+			//Verificar se há algum tópico faltante em um dos níveis feitos do aluno (guardar níveis completados?)
+			List<String> topicosFaltantes = descobrirTopicosFaltantes(conteudos, nivelETopico);
+			List<Content> conteudosPorTopicosFaltantes = new ArrayList<>();
+
+			//recomendar os tópicos de níveis mais baixos.
+			//pegar os conteúdos desse tópico
+			int proximoNivelAluno = 0;
+			if(topicosFaltantes.isEmpty())
+			{				
+				for (int i = 0; i < niveisFeitos.length; i++) {
+					int nivelFeito = niveisFeitos[i];
+					if(nivelFeito>proximoNivelAluno)
+					{
+						proximoNivelAluno=nivelFeito;
+					}
+				}
+				proximoNivelAluno++;
+
+				ServiceWrapper servicoPegarConteudosDoNivel = require("SACIP", "findContents");
+				servicoPegarConteudosDoNivel.addParameter("level", proximoNivelAluno);
+				List resultado = servicoPegarConteudosDoNivel.run();
+				if(resultado.get(0)==null || resultado.get(0) instanceof String)
+				{
+					return "não há conteúdos";
+				}
+				conteudos.addAll((List<Content>) resultado.get(0));
+				conteudosPorTopicosFaltantes.addAll((List<Content>) resultado.get(0));
+			}
+			else
+			{
+				conteudosPorTopicosFaltantes = filtrarConteudosPorTopicos(conteudos, topicosFaltantes);						
+			}			
+			conteudosPorTopicosFaltantes = filtrarConteudosPorTags(conteudosPorTopicosFaltantes, preferenciasAluno);
+			
+			
 			List<Content> conteudosDasTrilhas = new ArrayList<>();
 			if(!grupo.isEmpty())
 			{
@@ -114,41 +155,11 @@ public class RecommenderAgent extends Agent {
 
 
 
-			//Verificar se há algum tópico faltante em um dos níveis feitos do aluno (guardar níveis completados?)
-			List<String> topicosFaltantes = descobrirTopicosFaltantes(conteudos, nivelETopico);
-
-			//recomendar os tópicos de níveis mais baixos.
-			//pegar os conteúdos desse tópico
-			int proximoNivelAluno = 0;
-			if(topicosFaltantes.isEmpty())
-			{				
-				for (int i = 0; i < niveisFeitos.length; i++) {
-					int nivelFeito = niveisFeitos[i];
-					if(nivelFeito>proximoNivelAluno)
-					{
-						proximoNivelAluno=nivelFeito;
-					}
-				}
-				proximoNivelAluno++;
-
-				ServiceWrapper servicoPegarConteudosDoNivel = require("SACIP", "findContents");
-				servicoPegarConteudosDoNivel.addParameter("level", proximoNivelAluno);
-				resultado = servicoPegarConteudosDoNivel.run();
-				if(resultado.get(0)==null || resultado.get(0) instanceof String)
-				{
-					return "não há conteúdos";
-				}
-				conteudos =  (List<Content>) resultado.get(0);
-			}
-			else
-			{
-				conteudos = filtrarConteudosPorTopicos(conteudos, topicosFaltantes);						
-			}			
-			conteudos = filtrarConteudosPorTags(conteudos, preferenciasAluno);
+			
 
 			Set<Content> conteudosFiltrados = new HashSet<>();
 			//conteudosFiltrados.addAll(conteudosPorNovasTaxonomias);
-			conteudosFiltrados.addAll(conteudos);
+			conteudosFiltrados.addAll(conteudosPorTopicosFaltantes);
 			//conteudosFiltrados.addAll(conteudosDasTrilhas);
 
 			//PRIORIZAR POR PONTOS
@@ -171,9 +182,9 @@ public class RecommenderAgent extends Agent {
 
 			List<Content> top10Conteudos = new ArrayList<>();
 
-			if(sortedContent.size()>=10)
+			if(sortedContent.size()>=20)
 			{
-				for (int i = 0; i < 10; i++) {
+				for (int i = 0; i < 20; i++) {
 					top10Conteudos.add(sortedContent.get(i));
 				}
 			}

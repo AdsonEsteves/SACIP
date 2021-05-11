@@ -8,4 +8,6 @@ public interface CypherExecutor {
     List<Map<String, Object>> readquery(String statement, Map<String,Object> params);
 
     List<Map<String, Object>> writequery(String statement, Map<String,Object> params);
+
+    void close_connection();
 }

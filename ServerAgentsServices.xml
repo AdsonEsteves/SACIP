@@ -52,6 +52,14 @@
 		<organization>SACIP</organization>
 	</service>
 
+	<service>
+		<name>resetStudentGroups</name>
+		<description>Reseta a informacao do grupo de alunos</description>
+		<entity>GrouperAgent</entity>
+		<scope>mas</scope>
+		<organization>SACIP</organization>
+	</service>
+
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	<!--  SACIP DBConnection Component											-->
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
