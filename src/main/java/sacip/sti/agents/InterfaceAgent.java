@@ -96,6 +96,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 
 		try {
 			Manager.getInstance().disconnect(agentPort, true);
+			usuariosConectados.remove(agentPort);
 			return "SUCESSO";
 		} catch (Exception e) {
 			LOG.error("Falhou criar conta em REST Interface", e);
@@ -126,6 +127,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 				localport++;
 			}
 			int setLocal = localport;
+			localport = 7102;
 			List<Student> estudantes = (List<Student>) run.get(0);
 			usuariosConectados.put(setLocal+"", estudantes.get(0));
 

@@ -122,7 +122,8 @@ public class RecommenderAgent extends Agent {
 					return "não há conteúdos";
 				}
 				conteudos.addAll((List<Content>) resultado.get(0));
-				conteudosPorTopicosFaltantes.addAll((List<Content>) resultado.get(0));
+				//conteudosPorTopicosFaltantes.addAll((List<Content>) resultado.get(0));
+				conteudosPorTopicosFaltantes = filtrarConteudosPorNivel(conteudos, proximoNivelAluno);
 			}
 			else
 			{
@@ -135,7 +136,7 @@ public class RecommenderAgent extends Agent {
 			if(!grupo.isEmpty())
 			{
 				//VERIFICAR TRILHAS E PEGAR CONTEUDOS UTILIZADOS NOS SEMELHANTES
-				conteudosDasTrilhas = filtrarConteudosDasTrilhasDosAlunosDoGrupo(grupo, conteudos);	
+				conteudosDasTrilhas = filtrarConteudosDasTrilhasDosAlunosDoGrupo(grupo, conteudos, trilha);	
 			}
 
 
@@ -182,15 +183,15 @@ public class RecommenderAgent extends Agent {
 
 			List<Content> top10Conteudos = new ArrayList<>();
 
-			if(sortedContent.size()>=20)
-			{
-				for (int i = 0; i < 20; i++) {
-					top10Conteudos.add(sortedContent.get(i));
-				}
-			}
-			else{
+			// if(sortedContent.size()>=20)
+			// {
+			// 	for (int i = 0; i < 20; i++) {
+			// 		top10Conteudos.add(sortedContent.get(i));
+			// 	}
+			// }
+			// else{
 				top10Conteudos.addAll(sortedContent);
-			}
+			// }
 			int nivelMaximo = niveisFeitos.length;			
 			String topicoMaximo = "0";
 			if(!nivelETopico.isEmpty())
@@ -200,13 +201,15 @@ public class RecommenderAgent extends Agent {
 				topicoMaximo = list.get(list.size()-1);
 			}
 			
-
-			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "grupo", grupo);
-			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "estudante", aluno);
-			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "recomendacoes", conteudosDasTrilhas);
-			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "topicosFaltantes", topicosFaltantes);
-			DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "proximoNivel", proximoNivelAluno);
-			DataHolder.getInstance().imprimirDados();
+			if(!grupo.isEmpty())
+			{
+				DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "grupo", grupo);
+				DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "estudante", aluno);
+				DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "recomendacoes", conteudosDasTrilhas);
+				DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "topicosFaltantes", topicosFaltantes);
+				DataHolder.getInstance().adicionarDados("nv"+nivelMaximo+"-tpc"+topicoMaximo, "proximoNivel", proximoNivelAluno);
+				DataHolder.getInstance().imprimirDados();
+			}
 
 			//retornando conteudos
 			String exercicio = top10Conteudos.toString();
@@ -282,6 +285,25 @@ public class RecommenderAgent extends Agent {
 
 		for (Content content : conteudos) {
 			if(topicos.contains(content.getTopic()))
+			{
+				conteudosRecomendados.add(content);
+			}			
+		}
+
+		if(conteudosRecomendados.isEmpty())
+		{
+			return conteudos;
+		}
+ 
+		return conteudosRecomendados;
+	}
+
+	private List<Content> filtrarConteudosPorNivel(List<Content> conteudos, int nivel)
+	{
+		List<Content> conteudosRecomendados = new ArrayList<>();
+
+		for (Content content : conteudos) {
+			if(nivel == content.getLevel())
 			{
 				conteudosRecomendados.add(content);
 			}			
@@ -377,7 +399,7 @@ public class RecommenderAgent extends Agent {
 		return conteudosRecomendados;
 	}
 
-	private List<Content> filtrarConteudosDasTrilhasDosAlunosDoGrupo(List<Student> grupo, List<Content> conteudos)
+	private List<Content> filtrarConteudosDasTrilhasDosAlunosDoGrupo(List<Student> grupo, List<Content> conteudos, List<Content> reqtrilha)
 	{
 		List<Content> conteudosEmTodos = new ArrayList<>();
 
@@ -393,6 +415,7 @@ public class RecommenderAgent extends Agent {
 				}
 				else
 				{
+					if(!reqtrilha.stream().anyMatch(s -> s.getName().equals(conteudo)))
 					conteudosDoGrupo.put(conteudo, 1);
 				}
 			}			

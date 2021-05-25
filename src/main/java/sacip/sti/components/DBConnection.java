@@ -27,17 +27,11 @@ import sacip.sti.utils.CypherExecutor;
 @SuppressWarnings("unchecked")
 public class DBConnection extends Component {
 
-    private final CypherExecutor cypher;
+    private static final CypherExecutor cypher = new BoltCypherExecutor("bolt://localhost:7687", "neo4j", "123456", null);;
     private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 
     public DBConnection() {
         super();
-        cypher = new BoltCypherExecutor("bolt://localhost:7687", "neo4j", "123456", null);
-    }
-
-    public void close_conection()
-    {
-        cypher.close_connection();
     }
 
     @Override
@@ -113,7 +107,7 @@ public class DBConnection extends Component {
             LOG.error("ERRO NOS SERVICOS DE CONEXAO DO BANCO DE DADOS", e);
         }
         finally{
-            cypher.close_connection();
+            //cypher.close_connection();
         }
 
     }
@@ -731,14 +725,14 @@ public class DBConnection extends Component {
         }
 
         for (int i = 0; i < LIMALU; i++) {
-            dummyStudents.add(mapaCriacaoUsuario(returnRandomTags(tags), generos, niveisEdu));
+            //dummyStudents.add(mapaCriacaoUsuario(returnRandomTags(tags), generos, niveisEdu));
         }
 
         //System.out.println(queryBuilt.toString());
 
         doQuery("UNWIND $props AS map CREATE (n:CONTENT) SET n = map", Map.of("props", mapas.toArray()));
 
-        doQuery("UNWIND $props AS map CREATE (n:USER) SET n = map", Map.of("props", dummyStudents.toArray()));
+        //doQuery("UNWIND $props AS map CREATE (n:USER) SET n = map", Map.of("props", dummyStudents.toArray()));
 
         doQuery("CREATE (n:INFO {"+
                 "MAXlevel: $MAXlevel,"+
@@ -828,7 +822,7 @@ public class DBConnection extends Component {
     {
         List<String> selectedTags = new ArrayList<>();
 
-        int randtags = (int)(Math.random() * 5) + 1; 
+        int randtags = (int)(Math.random() * 3) + 1; 
 
         for (int i = 0; i < randtags; i++) {
             String chosenTag = tags[new Random().nextInt(tags.length)];

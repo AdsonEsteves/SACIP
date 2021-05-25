@@ -79,6 +79,10 @@ public class GrouperAgent extends Agent {
 	public HashMap<String, List<Student>> findStudentGroup()
 	{
 		List<Student> estudantes = getUsers();
+		if(estudantes==null)
+		{
+			return new HashMap<>();
+		}
 		HashMap<String, List<Student>> studentGroups = new HashMap<>();
 		double score = 0.0;
 		int mean = 10;
@@ -87,7 +91,7 @@ public class GrouperAgent extends Agent {
 
 		for (Student estudante : estudantes) 
 		{
-			docs.add(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", "")+" "+estudante.getNivelEducacional()+" "+estudante.getGenero()+" "+grupoIdade(estudante.getIdade()));
+			docs.add(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", "")+" "+estudante.getNivelEducacional()+" "+grupoIdade(estudante.getIdade()));
 			//System.out.println(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", "")+" "+estudante.getNivelEducacional());
 			//docs.add(estudante.getPreferencias().toString().replaceAll("[,\\[\\]]", ""));
 		}

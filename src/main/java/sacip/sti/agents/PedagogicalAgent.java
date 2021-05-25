@@ -175,6 +175,11 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 
 	private List<Student> getStudentGroup(Student aluno) throws BoardException, InterruptedException
 	{
+		if(Board.getContextAttribute("StudentsGroups")==null)
+		{
+			return new ArrayList<>();
+		}
+
 		HashMap<String, List<Student>> studentGroups = (HashMap<String, List<Student>>) Board.getContextAttribute("StudentsGroups");
 
 		for (Entry<String, List<Student>> group : studentGroups.entrySet()) {
