@@ -38,9 +38,8 @@ public class TrackingAgent extends Agent implements MessageListener {
 
 		JsonNode dados = (JsonNode) in.get("dados");
 		String nome = dados.get("nome").asText();
-		
-		switch (service.replace(super.getPort(), "")) 
-		{
+
+		switch (service.replace(super.getPort(), "")) {
 			case "storeData":
 				if (dados.has("cliques")) {
 					out.add(storeClicks(dados, nome));
@@ -49,15 +48,15 @@ public class TrackingAgent extends Agent implements MessageListener {
 					out.add(storeUsedContent(dados, nome));
 				}
 				break;
-			
+
 			case "storeSolvedExercise":
 				out.add(addStudentData(dados.get("conteudo"), nome, "exerciciosResolvidos"));
 				break;
-			
+
 			case "storeContentOnPath":
 				out.add(addStudentData(dados.get("conteudo"), nome, "trilha"));
 				break;
-			
+
 			case "storeStudentErrors":
 				out.add(addStudentData(dados.get("conteudo"), nome, "errosDoEstudante"));
 				break;
@@ -71,9 +70,9 @@ public class TrackingAgent extends Agent implements MessageListener {
 
 		while (alive) {
 			LOG.info("INSTANCIA " + super.getPort() + " viva");
-			
+
 			try {
-				ServiceWrapper wrapper = require("SACIP"+super.getPort(), "getAluno"+super.getPort());
+				ServiceWrapper wrapper = require("SACIP" + super.getPort(), "getAluno" + super.getPort());
 				Student estudante = (Student) wrapper.run().get(0);
 				// descobrirModulosMaisUtilizados(estudante);
 				// descobrirTagsMaisUtilizadas(estudante);
@@ -99,13 +98,12 @@ public class TrackingAgent extends Agent implements MessageListener {
 
 	}
 
-	private Object storeClicks(JsonNode dados, String nome)
-	{
+	private Object storeClicks(JsonNode dados, String nome) {
 		List<String> dadosC = new ArrayList<>();
 		List<String> dadosO = new ArrayList<>();
 		List<String> dadosA = new ArrayList<>();
 		List<String> dadosE = new ArrayList<>();
-		
+
 		if (dados.get("cliques").isArray()) {
 			ArrayNode cliqueArray = (ArrayNode) dados.get("cliques");
 			for (JsonNode jsonNode : cliqueArray) {
@@ -144,9 +142,8 @@ public class TrackingAgent extends Agent implements MessageListener {
 			return e.getLocalizedMessage();
 		}
 	}
-	
-	private Object storeUsedContent(JsonNode dados, String nome)
-	{
+
+	private Object storeUsedContent(JsonNode dados, String nome) {
 		try {
 			ServiceWrapper wrapper = require("SACIP", "storeStudentContentUse");
 			wrapper.addParameter("name", nome);
@@ -159,8 +156,7 @@ public class TrackingAgent extends Agent implements MessageListener {
 		}
 	}
 
-	private Object addStudentData(JsonNode conteudo, String nome, String attrName)
-	{
+	private Object addStudentData(JsonNode conteudo, String nome, String attrName) {
 		try {
 			ServiceWrapper wrapper = require("SACIP", "editStudentListAttr");
 			wrapper.addParameter("name", nome);
@@ -168,32 +164,45 @@ public class TrackingAgent extends Agent implements MessageListener {
 			wrapper.addParameter("newValue", conteudo);
 			return wrapper.run().get(0);
 		} catch (Exception e) {
-			LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS de "+attrName, e);
+			LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS de " + attrName, e);
+			e.printStackTrace();
+			return e.getLocalizedMessage();
+		}
+	}
+
+	private Object addStudent2Data(JsonNode conteudo, String nome, String attrName) {
+		// TODO refazer os nomes? Será necessário o uso de json node? Chamar classes sem
+		// passar pelos agentes?
+		try {
+			ServiceWrapper wrapper = require("SACIP", "editStudentListAttr");
+			wrapper.addParameter("name", nome);
+			wrapper.addParameter("attrName", attrName);
+			wrapper.addParameter("newValue", conteudo);
+			return wrapper.run().get(0);
+		} catch (Exception e) {
+			LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS de " + attrName, e);
 			e.printStackTrace();
 			return e.getLocalizedMessage();
 		}
 	}
 
 	private void descobrirTempoGastoPorTag(Student estudante) throws ServiceWrapperException, InterruptedException,
-			ExecutionException, JsonMappingException, JsonProcessingException 
-	{
+			ExecutionException, JsonMappingException, JsonProcessingException {
 
-		//Fazer busca dos conteudos usados
+		// Fazer busca dos conteudos usados
 		ServiceWrapper wrapper = require("SACIP", "getLogsDoAluno");
 		wrapper.addParameter("name", estudante.getName());
 		wrapper.addParameter("type", "USE");
 		List resposta = wrapper.run();
 		JsonNode conteudosUsados = (JsonNode) resposta.get(0);
 
-		//Passar pelos conteudos, descobrir suas tags e atribuir os tempos a cada uma
+		// Passar pelos conteudos, descobrir suas tags e atribuir os tempos a cada uma
 		Map<String, Long> tagTime = new LinkedHashMap<>();
-		if(conteudosUsados.isArray())
-		{
+		if (conteudosUsados.isArray()) {
 			for (JsonNode contentNode : conteudosUsados) {
 				JsonNode tags = contentNode.get("tags");
 				Long timespent = contentNode.get("timespent").asLong(0);
-				if(tags.isArray())
-				{
+				if (tags.isArray()) {
 					for (JsonNode tagNode : tags) {
 						String tag = tagNode.asText();
 						tagTime.merge(tag, timespent, Long::sum);
@@ -201,12 +210,12 @@ public class TrackingAgent extends Agent implements MessageListener {
 				}
 			}
 		}
-		
-		//ordenar por tempo
+
+		// ordenar por tempo
 		Map<String, Long> sortedtags = tagTime.entrySet().stream()
-                         .sorted(Entry.comparingByValue(Comparator.reverseOrder()))
-						 .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-						 
+				.sorted(Entry.comparingByValue(Comparator.reverseOrder()))
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
 		ServiceWrapper wrapper2 = require("SACIP", "editStudent");
 		wrapper2.addParameter("name", estudante.getName());
 		wrapper2.addParameter("attrName", "tempoTag");
@@ -214,42 +223,49 @@ public class TrackingAgent extends Agent implements MessageListener {
 		wrapper2.run();
 	}
 
-	private void descobrirTempoGastoPorModulo(Student estudante)  throws ServiceWrapperException, InterruptedException, ExecutionException {
-		//Analisar os conteudos usados, horarios de entrada e saida
+	private void descobrirTempoGastoPorModulo(Student estudante)
+			throws ServiceWrapperException, InterruptedException, ExecutionException {
+		// Analisar os conteudos usados, horarios de entrada e saida
 	}
 
-	private void descobrirTempoGastoPorTopico(Student estudante)  throws ServiceWrapperException, InterruptedException, ExecutionException {
+	private void descobrirTempoGastoPorTopico(Student estudante)
+			throws ServiceWrapperException, InterruptedException, ExecutionException {
 
-		//Analisar os conteudos usados, horarios de entrada e saida
-
-	}
-
-	private void descobrirTiposDeExercicioQueMelhorEPiorSaiu(Student estudante)  throws ServiceWrapperException, InterruptedException, ExecutionException {
-
-		//Analisar trilhas, exercicios resolvidos e erros
+		// Analisar os conteudos usados, horarios de entrada e saida
 
 	}
 
-	private void verificarFrequenciaDoAluno(Student estudante)  throws ServiceWrapperException, InterruptedException, ExecutionException {
+	private void descobrirTiposDeExercicioQueMelhorEPiorSaiu(Student estudante)
+			throws ServiceWrapperException, InterruptedException, ExecutionException {
 
-		//buscar as datas de entrada e saida do sistema do aluno
-
-	}
-
-	private void descobrirTopicosMaisUtilizados(Student estudante)  throws ServiceWrapperException, InterruptedException, ExecutionException {
-
-		//buscar na trilha os Topicos de cada conteudo
-	}
-
-	private void descobrirTagsMaisUtilizadas(Student estudante)  throws ServiceWrapperException, InterruptedException, ExecutionException {
-
-		//buscar na trilha as tags de cada conteudo
+		// Analisar trilhas, exercicios resolvidos e erros
 
 	}
 
-	private void descobrirModulosMaisUtilizados(Student estudante)  throws ServiceWrapperException, InterruptedException, ExecutionException {
-		
-		//buscar cada um dos cliques do alunos e verificar o tempo total
+	private void verificarFrequenciaDoAluno(Student estudante)
+			throws ServiceWrapperException, InterruptedException, ExecutionException {
+
+		// buscar as datas de entrada e saida do sistema do aluno
+
+	}
+
+	private void descobrirTopicosMaisUtilizados(Student estudante)
+			throws ServiceWrapperException, InterruptedException, ExecutionException {
+
+		// buscar na trilha os Topicos de cada conteudo
+	}
+
+	private void descobrirTagsMaisUtilizadas(Student estudante)
+			throws ServiceWrapperException, InterruptedException, ExecutionException {
+
+		// buscar na trilha as tags de cada conteudo
+
+	}
+
+	private void descobrirModulosMaisUtilizados(Student estudante)
+			throws ServiceWrapperException, InterruptedException, ExecutionException {
+
+		// buscar cada um dos cliques do alunos e verificar o tempo total
 
 	}
 

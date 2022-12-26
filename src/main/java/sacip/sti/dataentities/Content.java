@@ -2,8 +2,8 @@ package sacip.sti.dataentities;
 
 import java.util.List;
 
-public class Content{
-    
+public class Content {
+
     private String name;
     private String descricao;
     private String topic;
@@ -14,15 +14,18 @@ public class Content{
     private String link;
     private int level;
     private String imageLink;
+    private String type;
 
-    public int pontos = 0;
+    public String motivo;
+
+    public Double pontos = 0.0;
 
     public Content() {
         super();
     }
 
-
-    public Content(String name, String descricao, int level, String topic, String complexity, boolean exercise, int taxonomy, List<String> tags, String link, String imageLink) {
+    public Content(String name, String descricao, int level, String topic, String complexity, boolean exercise,
+            int taxonomy, List<String> tags, String link, String imageLink, String type) {
         this.name = name;
         this.descricao = descricao;
         this.topic = topic;
@@ -33,6 +36,7 @@ public class Content{
         this.link = link;
         this.level = level;
         this.imageLink = imageLink;
+        this.type = type;
     }
 
     public String getName() {
@@ -50,7 +54,7 @@ public class Content{
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
-    
+
     public String getTopic() {
         return this.topic;
     }
@@ -96,11 +100,11 @@ public class Content{
         StringBuilder builder = new StringBuilder();
 
         for (String tag : tags) {
-            builder.append("'"+tag+"',");
+            builder.append("'" + tag + "',");
         }
-        
-        if(!tags.isEmpty())
-        builder.deleteCharAt(builder.lastIndexOf(","));
+
+        if (!tags.isEmpty())
+            builder.deleteCharAt(builder.lastIndexOf(","));
 
         return builder.toString();
     }
@@ -136,18 +140,31 @@ public class Content{
     @Override
     public String toString() {
         return "{" +
-            " name='" + getName() + "'" +
-            ", descricao='" + getDescricao() + "'" +
-            ", topic='" + getTopic() + "'" +
-            ", complexity='" + getComplexity() + "'" +
-            ", exercise='" + isExercise() + "'" +
-            ", taxonomy='" + getTaxonomy() + "'" +
-            ", tags:[" + buildTagsAsString() + "]" +
-            ", link='" + getLink() + "'" +
-            ", level='" + getLevel() + "'" +
-            ", imageLink='" + getImageLink() + "'" +
-            "}";
+                " name='" + getName() + "'" +
+                ", descricao='" + getDescricao() + "'" +
+                ", topic='" + getTopic() + "'" +
+                ", complexity='" + getComplexity() + "'" +
+                ", exercise='" + isExercise() + "'" +
+                ", taxonomy='" + getTaxonomy() + "'" +
+                ", tags:[" + buildTagsAsString() + "]" +
+                ", link='" + getLink() + "'" +
+                ", level='" + getLevel() + "'" +
+                ", imageLink='" + getImageLink() + "'" +
+                "}";
     }
-    
+
+    /**
+     * @return String return the type
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * @param type the type to set
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
 
 }

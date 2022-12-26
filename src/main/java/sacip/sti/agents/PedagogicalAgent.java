@@ -38,11 +38,10 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 		super();
 	}
 
-	private void registrarAluno()
-	{
+	private void registrarAluno() {
 		try {
 			Map<String, Student> usuariosConectados = (Map<String, Student>) Board.getContextAttribute("conectedUsers");
-			this.student = usuariosConectados.get(super.getPort());			
+			this.student = usuariosConectados.get(super.getPort());
 		} catch (Exception e) {
 			LOG.error("Problema no registro do usuario", e);
 		}
@@ -63,16 +62,17 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 				add("UlGW3aVSZI");
 			}
 		};
-		this.student = new Student("l4yhU9z2bx", "123456", "link", "masculino", 24, "Graduação", preferencias, trilha);
+		this.student = new Student("l4yhU9z2bx", "123456", "link", "masculino", 24, 14, preferencias, trilha, 10.0,
+				0.95);
 	}
 
 	private void registrarConteudosDaTrilhaDoAluno() {
-		if(student.getTrilha()!=null)
-		{
+		if (student.getTrilha() != null) {
 			List<String> modifiedList = new ArrayList<>();
 			try {
 				ServiceWrapper buscarConteudos = require("SACIP", "findContents");
-				buscarConteudos.addParameter("name",this.student.getTrilha().toArray(new String[this.student.getTrilha().size()]));
+				buscarConteudos.addParameter("name",
+						this.student.getTrilha().toArray(new String[this.student.getTrilha().size()]));
 				List resultado = buscarConteudos.run();
 				if (resultado.get(0) instanceof List) {
 					List<Content> trilhaConteudos = (List<Content>) resultado.get(0);
@@ -92,8 +92,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 				e.printStackTrace();
 				LOG.error("Não conseguiu gerar a trilha", e);
 			}
-		}
-		else{
+		} else {
 			student.setTrilha(new ArrayList<String>());
 		}
 	}
@@ -110,7 +109,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 				break;
 
 			case "atualizarTrilha":
-				out.add(atualizarTrilha((String)in.get("nomeConteudo")));
+				out.add(atualizarTrilha((String) in.get("nomeConteudo")));
 				break;
 
 			case "suggestContent":
@@ -119,9 +118,9 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 
 			case "registerStudent":
 				registrarAluno();
-				//montarAlunoExemplo();
+				// montarAlunoExemplo();
 				registrarConteudosDaTrilhaDoAluno();
-			break;
+				break;
 
 			default:
 				throw new ServiceException("Serviço " + service + " não foi implementado no agente pedagógico.");
@@ -132,15 +131,15 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
 		// while(alive)
 		// {
-		// 	try {
-		// 		if(super.getPort()!=null && this.student == null)
-		// 		{					
-					
-		// 			break;
-		// 		}
-		// 	} catch (Exception e) {
-		// 		//TODO: handle exception
-		// 	}
+		// try {
+		// if(super.getPort()!=null && this.student == null)
+		// {
+
+		// break;
+		// }
+		// } catch (Exception e) {
+		// //TODO: handle exception
+		// }
 		// }
 	}
 
@@ -150,10 +149,8 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 
 	}
 
-	private Object atualizarTrilha(String nomeConteudo)
-	{
-		if(nomeConteudo.equals(""))
-		{
+	private Object atualizarTrilha(String nomeConteudo) {
+		if (nomeConteudo.equals("")) {
 			return new ServiceException("nome de conteudo invalido");
 		}
 
@@ -167,76 +164,73 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 			wrapper.addParameter("newValue", new TextNode(nomeConteudo));
 			return wrapper.run().get(0);
 		} catch (Exception e) {
-			LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS de "+trilha, e);
+			LOG.error("ERRO NO TRACKING AGENT AO ENVIAR DADOS de " + trilha, e);
 			e.printStackTrace();
 			return e.getLocalizedMessage();
 		}
 	}
 
-	private List<Student> getStudentGroup(Student aluno) throws BoardException, InterruptedException
-	{
-		if(Board.getContextAttribute("StudentsGroups")==null)
-		{
+	private List<Student> getStudentGroup(Student aluno) throws BoardException, InterruptedException {
+		if (Board.getContextAttribute("StudentsGroups") == null) {
 			return new ArrayList<>();
 		}
 
-		HashMap<String, List<Student>> studentGroups = (HashMap<String, List<Student>>) Board.getContextAttribute("StudentsGroups");
+		HashMap<String, List<Student>> studentGroups = (HashMap<String, List<Student>>) Board
+				.getContextAttribute("StudentsGroups");
 
 		for (Entry<String, List<Student>> group : studentGroups.entrySet()) {
 			for (Student student : group.getValue()) {
-				if(student.getName().equals(aluno.getName()))
-				{
-					System.out.println("TOPICOS: "+group.getKey());
+				if (student.getName().equals(aluno.getName())) {
+					System.out.println("TOPICOS: " + group.getKey());
 					DataHolder.getInstance().setTopic(group.getKey());
 					return group.getValue();
 				}
 			}
 		}
-		
+
 		return new ArrayList<>();
 	}
 
-	private String suggestContent()
-	{
-		try 
-		{
-			List<Student> studentGroup = getStudentGroup(getAluno());		
+	private String suggestContent() {
+		try {
+			if (getAluno().getTrilha().size() % 3 == 0) {
+				ServiceWrapper wrapper2 = AgentServer.require("SACIP", "resetStudentGroups");
+				List run2 = wrapper2.run();
+			}
 
-			//Pegar grupo de alunos
+			List<Student> studentGroup = getStudentGroup(getAluno());
+
+			// Pegar grupo de alunos
 			ServiceWrapper servicoGetGroups = require("SACIP", "getStudentGroups");
 			servicoGetGroups.addParameter("estudante", getAluno());
 			// List<Student> grupo = (List<Student>) servicoGetGroups.run().get(0);
 			List<Student> grupo = new ArrayList<>();
 
 			// studentGroup.forEach(s -> {
-			// 	Student student = grupo.stream().filter(g -> g.getName().equals(s.getName()))
-			// 	.findAny().orElseGet(()->null);
-			// 	if(student==null && !s.getName().equals(getAluno().getName()))
-			// 	grupo.add(s);				
+			// Student student = grupo.stream().filter(g -> g.getName().equals(s.getName()))
+			// .findAny().orElseGet(()->null);
+			// if(student==null && !s.getName().equals(getAluno().getName()))
+			// grupo.add(s);
 			// });
 			studentGroup.forEach(s -> {
-				if(!s.getName().equals(getAluno().getName()))
-				grupo.add(s);				
+				if (!s.getName().equals(getAluno().getName()))
+					grupo.add(s);
 			});
-			
-			
-			//Pedir recomendação para o recomendador
+
+			// Pedir recomendação para o recomendador
 			ServiceWrapper servicoGetContent = require("SACIP", "getRecommendedContent");
 			servicoGetContent.addParameter("estudante", getAluno());
 			servicoGetContent.addParameter("grupo", grupo);
 			servicoGetContent.addParameter("trilha", this.trilha);
 			List resultado = servicoGetContent.run();
-			if(resultado.isEmpty())
-			{
+			if (resultado.isEmpty()) {
 				return "vazio";
 			}
 			String recomendacoes = resultado.get(0).toString();
 
 			return recomendacoes;
-						
-		} 
-		catch (Exception e) 
-		{
+
+		} catch (Exception e) {
 			LOG.error("ERRO NO PEDAGOGICAL AGENT AO SUGERIR EXERCÍCIOS", e);
 			e.printStackTrace();
 			return e.getLocalizedMessage();
@@ -244,8 +238,7 @@ public class PedagogicalAgent extends Agent implements MessageListener {
 
 	}
 
-	private Student getAluno()
-	{
+	private Student getAluno() {
 		return this.student;
 	}
 

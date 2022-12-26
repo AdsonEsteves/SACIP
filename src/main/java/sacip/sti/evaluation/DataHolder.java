@@ -30,7 +30,7 @@ public class DataHolder {
 
     Map<String, Map<String, Object>> dados = new HashMap<>();
     Map<String, Map<String, Object>> dadosMainipulados = new HashMap<>();
-    List<HashMap<String,String>> finalFile = new ArrayList<>();
+    List<HashMap<String, String>> finalFile = new ArrayList<>();
     String mainTopic = "";
 
     float valor_relevante_Recomendacoes = 0f;
@@ -89,10 +89,10 @@ public class DataHolder {
         imprimirDadosRelevanciaSequencial();
     }
 
-    public void settingFiles(){
+    public void settingFiles() {
         for (int i = 0; i < dadosMainipulados.size(); i++) {
             finalFile.add(new HashMap<String, String>());
-            finalFile.get(i).put("N students", i+"");
+            finalFile.get(i).put("N students", i + "");
         }
     }
 
@@ -104,31 +104,30 @@ public class DataHolder {
         String[] colunas = { "posicao conhecimento", "interesses do aluno", "10 tags mais comuns nos conteudos",
                 "10 tags mais comuns do grupo", "Melhor conteudo do grupo e tags", "Melhor conteudo do banco e tags",
                 "% tags semelhantes ao melhor" };
-        // Map<String, String> printableData = new LinkedHashMap<>();
-        // List<String> fileLines = new ArrayList<>();
-        // fileLines.add("posicao conhecimento;interesses do aluno;10 tags mais comuns
-        // nos conteudos;topicos do grupo;10 tags mais comuns do grupo;10 melhores
-        // conteudos do grupo;melhor conteudo do banco;% tags semelhantes ao
-        // estudante");
+        Map<String, String> printableData = new LinkedHashMap<>();
+        List<String> fileLines = new ArrayList<>();
+        fileLines.add(
+                "posicao conhecimento;interesses do aluno;10 tags mais comuns nos conteudos;topicos do grupo;10 tags mais comuns do grupo;10 melhores conteudos do grupo;melhor conteudo do banco;% tags semelhantes ao estudante");
 
         for (Entry<String, Map<String, Object>> entry : dados.entrySet()) {
             String position = entry.getKey();
             Student estudante = (Student) entry.getValue().get("estudante");
             List<Student> grupo = (List<Student>) entry.getValue().get("grupo");
             List<Content> recomendacoes = (List<Content>) entry.getValue().get("recomendacoes");
-            List<String> topicosFaltantes = (List<String>) entry.getValue().get("topicosFaltantes");
+            List<Content> topicosFaltantes = (List<Content>) entry.getValue().get("conteudosPorNovasTaxonomias");
             Integer proximoNivel = (Integer) entry.getValue().get("proximoNivel");
+            String motivo = (String) entry.getValue().get("motivoDeEscolha");
 
             // List<String> interessesDoAluno = String.join(" ",
             // estudante.getPreferencias());
             List<String> tagscomuns = retorneTagsComuns(recomendacoes);
             List<String> tagsComunsGrupo = retorneTagsComunsGrupo(grupo);
             List<Content> melhoresConteudos = retorneMelhoresConteudos(recomendacoes, estudante.getPreferencias(),
-                    topicosFaltantes, proximoNivel);
+                    topicosFaltantes, proximoNivel, grupo);
             // String melhoresConteudosString = melhoresConteudos.get(0).getName() + ": " +
             // melhoresConteudos.get(0).getTags();
             Content melhorConteudoBanco = retorneMelhorConteudoBanco(estudante.getPreferencias(), topicosFaltantes,
-                    proximoNivel);
+                    proximoNivel, grupo);
             // String conteuDoBanco = melhorConteudoBanco.getName() + ": " +
             // melhorConteudoBanco.getTags();
             // String propSemelhantes =
@@ -136,14 +135,14 @@ public class DataHolder {
             // melhoresConteudos.get(0));
 
             salvarDadosManipulados(estudante.getName(), position, estudante.getPreferencias(), tagsComunsGrupo,
-                    tagscomuns, melhoresConteudos.get(0).getTags(), melhorConteudoBanco.getTags());
+                    tagscomuns, melhoresConteudos.get(0).getType(), melhorConteudoBanco.getType(), motivo);
         }
 
     }
 
     public void salvarDadosManipulados(String nome, String topico, List<String> interessesAluno,
-            List<String> interessesGrupo, List<String> tagsComunsConteudos, List<String> tagsMelhorConteudoRecomendado,
-            List<String> tagsMelhorConteudoBanco) {
+            List<String> interessesGrupo, List<String> tagsComunsConteudos, String tagsMelhorConteudoRecomendado,
+            String tagsMelhorConteudoBanco, String motivo) {
         if (!dadosMainipulados.containsKey(nome)) {
             Map<String, Object> mapadedados = new HashMap<>();
             mapadedados.put("interessesAluno", interessesAluno);
@@ -175,6 +174,8 @@ public class DataHolder {
         relevancia = calcularRelevanciaDoGrupo(interessesAluno, tagsMelhorConteudoBanco);
         mapadedadosTopico.put("relevanciaMelhorConteudoBanco", relevancia);
 
+        mapadedadosTopico.put("motivoDeEscolha", motivo);
+
         mapadedados.put(topico, mapadedadosTopico);
         dadosMainipulados.put(nome, mapadedados);
 
@@ -194,8 +195,20 @@ public class DataHolder {
         return porcentagem;
     }
 
+    public float calcularRelevanciaDoGrupo(List<String> tagsInteresse, String tagsInteressadas) {
+        float contem = 0f;
+
+        if (tagsInteresse.contains(tagsInteressadas)) {
+            contem++;
+        }
+
+        float porcentagem = contem;
+
+        return porcentagem;
+    }
+
     public void imprimirDadosMediaPorcentagemDeInteressesDoAlunoNoGrupo() {
-        File printTxT = new File(saveFolder+"rawData - Group Interests.txt");
+        File printTxT = new File(saveFolder + "rawData - Group Interests.txt");
         List<String> fileLines = new ArrayList<>();
         int i = 0;
         fileLines.add("Name; Student Interests; Group Interests; Group Relevance to the Student");
@@ -213,8 +226,8 @@ public class DataHolder {
 
             fileLines.add(estudante + ";" + interessesAluno + ";" + interessesGrupo + ";" + relevancia);
 
-            finalFile.get(i).put("relevanciaGrupo", (valor_relevante_NoGrupo/(i+1))+"");
-            i++;            
+            finalFile.get(i).put("relevanciaGrupo", (valor_relevante_NoGrupo / (i + 1)) + "");
+            i++;
         }
 
         valor_relevante_NoGrupo = (valor_relevante_NoGrupo / dadosMainipulados.size());
@@ -227,7 +240,7 @@ public class DataHolder {
     }
 
     public void imprimirDadosMediaPorcentagemDeInteressesDoAlunoNasRecomendacoes() {
-        File printTxT = new File(saveFolder+"rawData - Recomendation Interests.txt");
+        File printTxT = new File(saveFolder + "rawData - Recomendation Interests.txt");
         List<String> fileLines = new ArrayList<>();
         int i = 0;
         fileLines.add("Name;Topic;Tags on Recomendations;Relevance to the student");
@@ -248,10 +261,10 @@ public class DataHolder {
                 }
             }
             // relevanciasum = (relevanciasum/15);
-            finalFile.get(i).put("relevanciaConteudos", (valor_relevante_Recomendacoes/((i+1) * 15))+"");
+            finalFile.get(i).put("relevanciaConteudos", (valor_relevante_Recomendacoes / ((i + 1) * 36)) + "");
             i++;
         }
-        valor_relevante_Recomendacoes = (valor_relevante_Recomendacoes / (dadosMainipulados.size() * 15));
+        valor_relevante_Recomendacoes = (valor_relevante_Recomendacoes / (dadosMainipulados.size() * 36));
 
         try {
             givenWritingStringToFile_whenUsingPrintWriter_thenCorrect(printTxT, fileLines);
@@ -261,10 +274,10 @@ public class DataHolder {
     }
 
     public void imprimirDadosMediaPorcentagemDeComparacaoMelhoresConteudos() {
-        File printTxT = new File(saveFolder+"rawData - dataBestContentRelevance.txt");
+        File printTxT = new File(saveFolder + "rawData - dataBestContentRelevance.txt");
         List<String> fileLines = new ArrayList<>();
-        fileLines.add("Name;Topic;Best Recomended Content Tags;Best DB Search Content Tags");
-        int i= 0;
+        fileLines.add("Name;Topic;Best Recomended Content Tags;Best DB Search Content Tags;Reason");
+        int i = 0;
         for (Entry<String, Map<String, Object>> entry : dadosMainipulados.entrySet()) {
 
             Map<String, Object> mapadedados = entry.getValue();
@@ -275,30 +288,33 @@ public class DataHolder {
                 if (entry2.getValue() instanceof Map) {
                     Map<String, Object> mapadedadosTopico = (Map<String, Object>) entry2.getValue();
 
-                    List<String> tagsMelhorConteudoRecomendado = (List<String>) mapadedadosTopico
+                    String tagsMelhorConteudoRecomendado = (String) mapadedadosTopico
                             .get("tagsMelhorConteudoRecomendado");
                     float relevanciaMelhorConteudoRecomendado = (float) mapadedadosTopico
                             .get("relevanciaMelhorConteudoRecomendado");
 
-                    List<String> tagsMelhorConteudoBanco = (List<String>) mapadedadosTopico
+                    String tagsMelhorConteudoBanco = (String) mapadedadosTopico
                             .get("tagsMelhorConteudoBanco");
                     float relevanciaMelhorConteudoBanco = (float) mapadedadosTopico
                             .get("relevanciaMelhorConteudoBanco");
 
+                    String motivo = (String) mapadedadosTopico.get("motivoDeEscolha");
+
                     fileLines.add(estudante + ";" + topico + ";" + tagsMelhorConteudoRecomendado + ";"
-                            + tagsMelhorConteudoBanco);
+                            + tagsMelhorConteudoBanco + ";" + motivo);
 
                     valor_relevante_recomendado = (valor_relevante_recomendado + relevanciaMelhorConteudoRecomendado);
                     valor_relevante_banco = (valor_relevante_banco + relevanciaMelhorConteudoBanco);
                 }
 
             }
-            finalFile.get(i).put("relevanciaMelhorConteudoRecomendado", (valor_relevante_recomendado/((i+1) * 15))+"");
-            finalFile.get(i).put("relevanciaMelhorConteudoBanco", (valor_relevante_banco/((i+1) * 15))+"");
+            finalFile.get(i).put("relevanciaMelhorConteudoRecomendado",
+                    (valor_relevante_recomendado / ((i + 1) * 36)) + "");
+            finalFile.get(i).put("relevanciaMelhorConteudoBanco", (valor_relevante_banco / ((i + 1) * 36)) + "");
             i++;
         }
-        valor_relevante_recomendado = valor_relevante_recomendado / (dadosMainipulados.size() * (15));
-        valor_relevante_banco = valor_relevante_banco / (dadosMainipulados.size() * (15));
+        valor_relevante_recomendado = valor_relevante_recomendado / (dadosMainipulados.size() * (36));
+        valor_relevante_banco = valor_relevante_banco / (dadosMainipulados.size() * (36));
 
         try {
             givenWritingStringToFile_whenUsingPrintWriter_thenCorrect(printTxT, fileLines);
@@ -308,7 +324,7 @@ public class DataHolder {
     }
 
     public void imprimirDadosdeRelevância() {
-        File printTxT = new File(saveFolder+"Avarage Relevance.txt");
+        File printTxT = new File(saveFolder + "Avarage Relevance.txt");
         List<String> fileLines = new ArrayList<>();
 
         fileLines.add(
@@ -324,23 +340,21 @@ public class DataHolder {
     }
 
     public void imprimirDadosRelevanciaSequencial() {
-        File printTxT = new File(saveFolder+"Avarage Relevance by new Students.txt");
+        File printTxT = new File(saveFolder + "Avarage Relevance by new Students.txt");
         List<String> fileLines = new ArrayList<>();
 
-        
         fileLines.add(
-            "N Students;Relevancia do Grupo;Relevância das Recomendacoes;Aderencia do Conteudo Recomendado;Aderência do Conteúdo do Banco");
-            
+                "N Students;Relevancia do Grupo;Relevância das Recomendacoes;Aderencia do Conteudo Recomendado;Aderência do Conteúdo do Banco");
+
         for (Map<String, String> linha : finalFile) {
             fileLines.add(
-                linha.get("N students")+";"+
-                linha.get("relevanciaGrupo")+";"+
-                linha.get("relevanciaConteudos")+";"+
-                linha.get("relevanciaMelhorConteudoRecomendado")+";"+
-                linha.get("relevanciaMelhorConteudoBanco")
-            );
+                    linha.get("N students") + ";" +
+                            linha.get("relevanciaGrupo") + ";" +
+                            linha.get("relevanciaConteudos") + ";" +
+                            linha.get("relevanciaMelhorConteudoRecomendado") + ";" +
+                            linha.get("relevanciaMelhorConteudoBanco"));
         }
-            
+
         try {
             givenWritingStringToFile_whenUsingPrintWriter_thenCorrect(printTxT, fileLines);
         } catch (Exception e) {
@@ -350,8 +364,7 @@ public class DataHolder {
 
     public void givenWritingStringToFile_whenUsingPrintWriter_thenCorrect(File fileName, List<String> lines)
             throws IOException {
-        if(!fileName.exists())
-        {
+        if (!fileName.exists()) {
             fileName.getParentFile().mkdirs();
         }
         FileWriter fileWriter = new FileWriter(fileName);
@@ -388,14 +401,15 @@ public class DataHolder {
         return (found / preferencias.size()) * 100 + "%";
     }
 
-    private Content retorneMelhorConteudoBanco(List<String> preferencias, List<String> topicosFaltantes,
-            int proximoNivel) {
+    private Content retorneMelhorConteudoBanco(List<String> preferencias, List<Content> topicosFaltantes,
+            int proximoNivel, List<Student> grupo) {
         try {
-            ServiceWrapper wrapper = AgentServer.require("SACIP", "getContentByTags");
+            ServiceWrapper wrapper = AgentServer.require("SACIP", "getContentByTipos");
             wrapper.addParameter("tags", preferencias);
             List run = wrapper.run();
             List<Content> busca = (List<Content>) run.get(0);
-            return retorneMelhoresConteudos(busca, preferencias, topicosFaltantes, proximoNivel).get(0);
+            return retorneMelhoresConteudos(busca, preferencias, topicosFaltantes, proximoNivel, grupo)
+                    .get(0);
 
         } catch (Exception e) {
             LOG.error("ERRO MELHOR CONTEUDO", e);
@@ -405,7 +419,7 @@ public class DataHolder {
     }
 
     private List<Content> retorneMelhoresConteudos(List<Content> conteudos, List<String> preferenciasAluno,
-            List<String> topicosFaltantes, int proximoNivel) {
+            List<Content> topicosFaltantes, int proximoNivel, List<Student> grupo) {
         List<Content> sortedContent = new ArrayList<Content>() {
             @Override
             public boolean add(Content e) {
@@ -413,7 +427,7 @@ public class DataHolder {
                 Collections.sort(this, new Comparator<Content>() {
                     @Override
                     public int compare(Content o1, Content o2) {
-                        return o2.pontos - o1.pontos;
+                        return Double.compare(o2.pontos, o1.pontos);
                     }
                 });
                 return true;
@@ -421,12 +435,11 @@ public class DataHolder {
         };
 
         for (Content content : conteudos) {
-            content.pontos = 0;
-            content.pontos += calculateTagPoints(content.getTags(), preferenciasAluno);
-            if (topicosFaltantes.contains(content.getTopic())) {
-                content.pontos += 10;
-            } else if (proximoNivel == content.getLevel()) {
-                content.pontos += 10;
+            content.pontos = 0.0;
+            // content.pontos += calculateTagPoints(content.getTags(), preferenciasAluno);
+            content.pontos += preferenciasAluno.contains(content.getType()) ? 1 : 0;
+            if (topicosFaltantes.contains(content)) {
+                content.pontos += (grupo.size() + 1.0) / 2.0;
             }
             sortedContent.add(content);
         }
@@ -439,14 +452,14 @@ public class DataHolder {
         Map<String, Integer> pontuacaoTags = new LinkedHashMap<>();
 
         for (Content conteudo : conteudos) {
-            List<String> tags = conteudo.getTags();
-            for (String tag : tags) {
-                if (pontuacaoTags.containsKey(tag)) {
-                    pontuacaoTags.put(tag, pontuacaoTags.get(tag) + 1);
-                } else {
-                    pontuacaoTags.put(tag, 1);
-                }
+            String tag = conteudo.getType();
+            // for (String tag : tags) {
+            if (pontuacaoTags.containsKey(tag)) {
+                pontuacaoTags.put(tag, pontuacaoTags.get(tag) + 1);
+            } else {
+                pontuacaoTags.put(tag, 1);
             }
+            // }
         }
         pontuacaoTags = sortByValue(pontuacaoTags);
         int i = 0;
@@ -481,8 +494,7 @@ public class DataHolder {
         for (String string : pontuacaoTags.keySet()) {
             i++;
             tagsComuns.add(string);
-            if(i>=10)
-            {
+            if (i >= 10) {
                 break;
             }
         }

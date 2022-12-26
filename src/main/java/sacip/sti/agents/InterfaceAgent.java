@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import sacip.sti.dataentities.Content;
 import sacip.sti.dataentities.Student;
 import sacip.sti.evaluation.DataHolder;
@@ -41,7 +40,7 @@ import sacip.sti.evaluation.DataHolder;
 @RestController
 @RequestMapping("/interface")
 @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-public class InterfaceAgent extends Agent implements MessageListener{
+public class InterfaceAgent extends Agent implements MessageListener {
 
 	private static Logger LOG = LoggerFactory.getLogger(AgentServer.class);
 	public int localport = 7102;
@@ -50,25 +49,25 @@ public class InterfaceAgent extends Agent implements MessageListener{
 	private static Map<String, Student> usuariosConectados;
 
 	public InterfaceAgent() {
-		super();			
+		super();
 		usuariosConectados = new HashMap<>();
 	}
 
 	@Override
 	public void boardChanged(Message msg) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void provide(String service, Map in, List out) throws ServiceException {
-		
+
 	}
 
 	@Override
 	protected void lifeCycle() throws LifeCycleException, InterruptedException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@PostMapping("/contas")
@@ -81,12 +80,12 @@ public class InterfaceAgent extends Agent implements MessageListener{
 			List run = wrapper.run();
 
 			ServiceWrapper wrapper2 = AgentServer.require("SACIP", "resetStudentGroups");
-			List run2 = wrapper2.run();
+			// List run2 = wrapper2.run();
 
 			return run.toString();
 		} catch (Exception e) {
 			LOG.error("Falhou criar conta em REST Interface", e);
-			return "Falhou criar conta: \n"+e.getLocalizedMessage();
+			return "Falhou criar conta: \n" + e.getLocalizedMessage();
 		}
 	}
 
@@ -100,7 +99,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 			return "SUCESSO";
 		} catch (Exception e) {
 			LOG.error("Falhou criar conta em REST Interface", e);
-			return "Falhou criar conta: \n"+e.getLocalizedMessage();
+			return "Falhou criar conta: \n" + e.getLocalizedMessage();
 		}
 	}
 
@@ -111,49 +110,45 @@ public class InterfaceAgent extends Agent implements MessageListener{
 			DataHolder.getInstance().resetar_dados();
 			String usuario = credenciais.get("usuario").asText();
 			String senha = credenciais.get("senha").asText();
-	
+
 			ServiceWrapper wrapper = AgentServer.require("SACIP", "findStudents");
 			wrapper.addParameter("name", usuario);
 			wrapper.addParameter("password", senha);
 			List run = wrapper.run();
 
-			if(run.get(0)==null)
-			{
+			if (run.get(0) == null) {
 				return "Login incorreto";
 			}
 
-			while(usuariosConectados.containsKey(localport+""))
-			{
+			while (usuariosConectados.containsKey(localport + "")) {
 				localport++;
 			}
 			int setLocal = localport;
 			localport = 7102;
 			List<Student> estudantes = (List<Student>) run.get(0);
-			usuariosConectados.put(setLocal+"", estudantes.get(0));
+			usuariosConectados.put(setLocal + "", estudantes.get(0));
 
 			Board.setContextAttribute("conectedUsers", usuariosConectados);
 
-			iniciandoAgentesUsuario(setLocal+"");
+			iniciandoAgentesUsuario(setLocal + "");
 			do {
-				try
-				{
-					Catalog.getEntityByName(setLocal+"", "SACIP"+setLocal, "PedagogicalAgent"+setLocal);				
+				try {
+					Catalog.getEntityByName(setLocal + "", "SACIP" + setLocal, "PedagogicalAgent" + setLocal);
 					break;
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					LOG.error("Entidade não encontrada", e);
 					Thread.sleep(1000);
-				}				
+				}
 			} while (true);
 
-			require("SACIP"+setLocal, "registerStudent"+setLocal).run();
+			require("SACIP" + setLocal, "registerStudent" + setLocal).run();
 
 			ObjectNode newNode = new ObjectMapper().createObjectNode();
 			newNode.put("porta", setLocal);
 			newNode.set("estudante", new ObjectMapper().valueToTree(estudantes.get(0)));
 
 			return newNode.toString();
-			
+
 		} catch (Exception e) {
 			LOG.error("ERRO NO LOGIN", e);
 			return e.getMessage();
@@ -161,7 +156,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 
 	}
 
-    @PutMapping("/contas")
+	@PutMapping("/contas")
 	public String editarConta(String name) {
 		return "test";
 	}
@@ -172,7 +167,7 @@ public class InterfaceAgent extends Agent implements MessageListener{
 
 		try {
 			ServiceWrapper wrapper = AgentServer.require("SACIP", "createContent");
-			String contxt= conteudo.get("conteudo").toString();
+			String contxt = conteudo.get("conteudo").toString();
 			Content content = new ObjectMapper().readValue(contxt, Content.class);
 			wrapper.addParameter("conteudo", content);
 			wrapper.addParameter("conteudoRelacionado", conteudo.get("conteudoRelacionado").asText(null));
@@ -181,27 +176,24 @@ public class InterfaceAgent extends Agent implements MessageListener{
 			return run.toString();
 		} catch (Exception e) {
 			LOG.error("Falhou criar conteudo em REST Interface", e);
-			return "Falhou criar conteudo: \n"+e.getLocalizedMessage();
+			return "Falhou criar conteudo: \n" + e.getLocalizedMessage();
 		}
 	}
-	
+
 	@GetMapping("/pergunta")
-	public String buscaPergunta()
-	{
+	public String buscaPergunta() {
 		return "";
 	}
 
 	@PostMapping("/pergunta")
-	public String registraPergunta()
-	{
+	public String registraPergunta() {
 		return "";
 	}
 
 	@GetMapping("/imprimirDados")
-	public String imprimirDados()
-	{
+	public String imprimirDados() {
 		try {
-			DataHolder.getInstance().imprimirDadosManipulados();			
+			DataHolder.getInstance().imprimirDadosManipulados();
 		} catch (Exception e) {
 			LOG.error("erro imprimir", e);
 			e.printStackTrace();
@@ -210,20 +202,22 @@ public class InterfaceAgent extends Agent implements MessageListener{
 		return "imprimiu";
 	}
 
-	public void iniciandoAgentesUsuario(String instancia) throws IOException
-	{
-		//Inicializando Agentes do Usuário
+	public void iniciandoAgentesUsuario(String instancia) throws IOException {
+		// Inicializando Agentes do Usuário
 		String UserAgentsStructureXML = readFile("UserAgentsStructure.xml");
-		String UserAgentsServicesXML = readFile("UserAgentsServices.xml");	
-		UserAgentsStructureXML = UserAgentsStructureXML.replace("$localport", instancia+"").replace("$serverport", serverport).replace("$serverAddress", serverAddress).replace("</name>", instancia+"</name>");
-		UserAgentsServicesXML = UserAgentsServicesXML.replace("</name>", instancia+"</name>").replace("</entity>", instancia+"</entity>").replace("</organization>", instancia+"</organization>");
+		String UserAgentsServicesXML = readFile("UserAgentsServices.xml");
+		UserAgentsStructureXML = UserAgentsStructureXML.replace("$localport", instancia + "")
+				.replace("$serverport", serverport).replace("$serverAddress", serverAddress)
+				.replace("</name>", instancia + "</name>");
+		UserAgentsServicesXML = UserAgentsServicesXML.replace("</name>", instancia + "</name>")
+				.replace("</entity>", instancia + "</entity>")
+				.replace("</organization>", instancia + "</organization>");
 		AgentServer.initialize(true, true, UserAgentsStructureXML, UserAgentsServicesXML);
 	}
 
-	public String readFile(String file) throws IOException
-	{
-		Path fileName = Path.of(file);         
-        String actual = Files.readString(fileName);
+	public String readFile(String file) throws IOException {
+		Path fileName = Path.of(file);
+		String actual = Files.readString(fileName);
 		return actual;
 	}
 

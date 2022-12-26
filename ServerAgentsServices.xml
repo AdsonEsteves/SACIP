@@ -11,7 +11,6 @@
 		<scope>mas</scope>
 		<organization>SACIP</organization>
 	</service>
-	
 	<service>
 		<name>getInterface</name>
 		<description>retorna informações do aluno usuário</description>
@@ -149,6 +148,13 @@
 		<organization>SACIP</organization>
 	</service>
 	<service>
+		<name>getContentByTipos</name>
+		<description>traz conteudos selecionados a partir de tipos enviados</description>
+		<entity>DBConnection</entity>
+		<scope>components</scope>
+		<organization>SACIP</organization>
+	</service>
+	<service>
 		<name>deleteContent</name>
 		<description>remove um conteudo do banco de dados</description>
 		<entity>DBConnection</entity>
@@ -162,6 +168,6 @@
 		<scope>components</scope>
 		<organization>SACIP</organization>
 	</service>
-	
-	
+
+
 </services>
